@@ -1,0 +1,17 @@
+body {
+    background-color: #f8f9fa;
+}
+
+.receipt-preview {
+    max-width: 300px;
+    border-radius: 12px;
+    border: 1px solid #dee2e6;
+}
+
+.item-card {
+    border: 1px solid #dee2e6;
+    border-radius: 12px;
+    padding: 15px;
+    margin-bottom: 12px;
+    background-color: white;
+}
