@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtual Environment
+.venv/
+
+# Environment variables
+.env
+
+# macOS
+.DS_Store
+
+# SQLite
+*.db
+
+# Uploads
+data/uploads/*
+!data/uploads/.gitkeep
+
+# Processed files
+data/processed/*
+!data/processed/.gitkeep
