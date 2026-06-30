@@ -14,16 +14,20 @@
 
 <body>
     <div class="container py-5">
+
         <div class="text-center mb-5">
-            <h1 class="fw-bold">DuitSplit</h1>
-            <p class="text-muted">
-                Upload a receipt, assign items to friends, and split the bill fairly.
+            <div class="display-2">💳</div>
+
+            <h1 class="fw-bold mt-2">DuitSplit</h1>
+
+            <p class="lead text-muted">
+                AI Powered Receipt Bill Splitter
             </p>
         </div>
 
         <div class="card shadow-sm mb-4">
             <div class="card-body">
-                <h4 class="card-title">1. Upload Receipt</h4>
+                <h4 class="card-title">📷 Upload Receipt</h4>
                 <p class="text-muted">Choose a receipt photo to start the bill split.</p>
 
                 <input type="file" id="receiptInput" class="form-control" accept="image/*">
@@ -38,9 +42,19 @@
             </div>
         </div>
 
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h4 class="card-title">🤖 AI Status</h4>
+
+                <p class="text-success mb-0" id="aiStatus">
+                    Ready to process receipt.
+                </p>
+            </div>
+        </div>
+
         <div class="card shadow-sm mb-4 d-none" id="itemsSection">
             <div class="card-body">
-                <h4 class="card-title">2. Extracted Items</h4>
+                <h4 class="card-title">🧾 Extracted Items</h4>
                 <p class="text-muted">These are mock items for now. Later, Gemini OCR will replace this.</p>
 
                 <div id="itemsList"></div>
@@ -49,7 +63,7 @@
 
         <div class="card shadow-sm mb-4 d-none" id="friendsSection">
             <div class="card-body">
-                <h4 class="card-title">3. Add Friends</h4>
+                <h4 class="card-title">👥 Friends</h4>
 
                 <div class="input-group mb-3">
                     <input type="text" id="friendNameInput" class="form-control" placeholder="Enter friend name">
@@ -62,10 +76,11 @@
 
         <div class="card shadow-sm mb-4 d-none" id="summarySection">
             <div class="card-body">
-                <h4 class="card-title">4. Bill Summary</h4>
+                <h4 class="card-title">💰 Bill Summary</h4>
                 <div id="summaryList"></div>
             </div>
         </div>
+
     </div>
 
     <script src="../static/js/app.js"></script>

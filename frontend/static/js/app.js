@@ -32,15 +32,25 @@ receiptInput.addEventListener("change", () => {
 });
 
 processReceiptBtn.addEventListener("click", () => {
+    const aiStatus = document.getElementById("aiStatus");
+
     if (!receiptInput.files[0]) {
         alert("Please upload a receipt first.");
         return;
     }
 
+    aiStatus.textContent = "🤖 AI is processing the receipt...";
+    aiStatus.className = "text-warning mb-0";
+
     itemsSection.classList.remove("d-none");
     friendsSection.classList.remove("d-none");
 
-    renderItems();
+    setTimeout(() => {
+        aiStatus.textContent = "✅ Receipt processed successfully!";
+        aiStatus.className = "text-success mb-0";
+
+        renderItems();
+    }, 1000);
 });
 
 addFriendBtn.addEventListener("click", () => {
