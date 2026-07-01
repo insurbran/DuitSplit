@@ -1,0 +1,32 @@
+services:
+  frontend:
+    build:
+      context: frontend
+    ports:
+      - "8000:8000"
+    environment:
+      - BACKEND_URL=http://backend:8001
+    depends_on:
+      - backend
+    networks:
+      - app-network
+
+  backend:
+    build:
+      context: backend
+    environment:
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      - DB_PATH=data/duitsplit.db
+    volumes:
+      - backend-data:/app/data
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  backend-data:

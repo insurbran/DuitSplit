@@ -1,24 +1,30 @@
+# Environment
+.env
+*.env
+!.env.example
+
 # Python
 __pycache__/
 *.py[cod]
 *.pyo
-
-# Virtual Environment
+*.egg-info/
 .venv/
+venv/
 
-# Environment variables
-.env
+# uv
+.uv/
 
-# macOS
-.DS_Store
-
-# SQLite
+# Databases / data
 *.db
+*.sqlite
+*.sqlite3
+data/
 
-# Uploads
-data/uploads/*
-!data/uploads/.gitkeep
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
 
-# Processed files
-data/processed/*
-!data/processed/.gitkeep
+# Logs
+*.log
