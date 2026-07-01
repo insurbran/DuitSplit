@@ -1,0 +1,27 @@
+[project]
+name = "duitsplit-frontend"
+version = "0.1.0"
+description = "DuitSplit frontend — UI and API proxy."
+requires-python = "==3.14.*"
+dependencies = [
+    "fastapi==0.118.0",
+    "uvicorn==0.37.0",
+    "jinja2==3.1.6",
+    "httpx==0.28.1",
+    "python-dotenv==1.1.1",
+]
+
+[dependency-groups]
+dev = [
+    "ruff==0.15.0",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py314"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.uv]
+package = false

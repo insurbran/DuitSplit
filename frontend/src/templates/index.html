@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>DuitSplit — Receipt Bill Splitter</title>
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+    integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+    crossorigin="anonymous"
+  />
+  <style>
+    body { background: #f6f8fb; }
+    .step-card { display: none; }
+    .step-card.active { display: block; }
+    .confidence-badge { font-size: .7rem; }
+    .friend-chip { cursor: grab; user-select: none; }
+    .item-row.assignable { cursor: pointer; }
+    .item-row.selected { background: #e7f1ff; }
+    .avatar {
+      width: 28px; height: 28px; border-radius: 50%;
+      display: inline-flex; align-items: center; justify-content: center;
+      color: #fff; font-size: .75rem; font-weight: 600;
+    }
+    .navbar-brand b { color: #0d6efd; }
+  </style>
+</head>
+<body>
+  <nav class="navbar navbar-light bg-white border-bottom mb-4">
+    <div class="container">
+      <span class="navbar-brand mb-0 h1">💸 <b>Duit</b>Split</span>
+      <span class="text-muted small">Receipt Bill Splitter</span>
+    </div>
+  </nav>
+
+  <div class="container pb-5" style="max-width: 880px;">
+    <div id="alertBox"></div>
+
+    <!-- STEP 1: Upload -->
+    <div class="card step-card active shadow-sm" id="step-upload">
+      <div class="card-body">
+        <h5 class="card-title">1 · Upload receipt</h5>
+        <p class="text-muted">Snap or upload a photo of your receipt to extract items.</p>
+        <input type="file" class="form-control mb-3" id="receiptFile" accept="image/*" />
+        <button class="btn btn-primary" id="btnOcr">
+          <span class="spinner-border spinner-border-sm d-none" id="ocrSpin"></span>
+          Extract items
+        </button>
+      </div>
+    </div>
+
+    <!-- STEP 2: Review items -->
+    <div class="card step-card shadow-sm" id="step-items">
+      <div class="card-body">
+        <h5 class="card-title">2 · Review extracted items</h5>
+        <p class="text-muted">Items below <b>70%</b> confidence are flagged — double-check them.</p>
+        <div class="table-responsive">
+          <table class="table align-middle">
+            <thead>
+              <tr><th>Item</th><th class="text-end">Qty</th><th class="text-end">Price</th><th class="text-center">Confidence</th></tr>
+            </thead>
+            <tbody id="itemsBody"></tbody>
+          </table>
+        </div>
+        <div class="d-flex justify-content-between border-top pt-2">
+          <div class="text-muted">
+            Subtotal: <b id="sumSubtotal">0.00</b> ·
+            Tax: <b id="sumTax">0.00</b> ·
+            Total: <b id="sumTotal">0.00</b>
+          </div>
+        </div>
+        <hr />
+        <div class="mb-3">
+          <label class="form-label">Session name</label>
+          <input type="text" class="form-control" id="sessionName" placeholder="Dinner at Mamak" />
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Your name (paid the bill)</label>
+          <input type="text" class="form-control" id="paidBy" placeholder="Brandon" />
+        </div>
+        <button class="btn btn-primary" id="btnCreateSession">Start splitting →</button>
+      </div>
+    </div>
+
+    <!-- STEP 3: Friends + assignment -->
+    <div class="card step-card shadow-sm" id="step-assign">
+      <div class="card-body">
+        <h5 class="card-title">3 · Add friends & assign items</h5>
+
+        <div class="row g-2 mb-3">
+          <div class="col">
+            <input type="text" class="form-control" id="friendName" placeholder="Add a friend's name" />
+          </div>
+          <div class="col-auto">
+            <button class="btn btn-outline-primary" id="btnAddFriend">+ Add</button>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <div class="text-muted small mb-1">Pick the active friend, then click their items:</div>
+          <div id="friendChips" class="d-flex flex-wrap gap-2"></div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table align-middle">
+            <thead>
+              <tr><th>Item</th><th class="text-end">Price</th><th>Shared by</th></tr>
+            </thead>
+            <tbody id="assignBody"></tbody>
+          </table>
+        </div>
+
+        <button class="btn btn-primary" id="btnSummary">View bill summary →</button>
+      </div>
+    </div>
+
+    <!-- STEP 4: Summary -->
+    <div class="card step-card shadow-sm" id="step-summary">
+      <div class="card-body">
+        <h5 class="card-title">4 · Bill summary</h5>
+        <p class="text-muted">Paid by <b id="summaryPaidBy"></b>. Here's what everyone owes:</p>
+        <ul class="list-group mb-3" id="summaryList"></ul>
+        <div class="d-flex justify-content-between border-top pt-2">
+          <span class="fw-bold">Total split</span>
+          <span class="fw-bold" id="summaryTotal">0.00</span>
+        </div>
+        <button class="btn btn-outline-secondary mt-3" id="btnRestart">Start over</button>
+      </div>
+    </div>
+  </div>
+
+  <script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+    crossorigin="anonymous"></script>
+  <script>
+    const state = {
+      receipt: null,
+      sessionId: null,
+      friends: [],
+      activeFriend: null,
+      // item_name -> Set(friend_id)
+      assignments: {},
+    };
+
+    const $ = (id) => document.getElementById(id);
+
+    function showStep(id) {
+      document.querySelectorAll(".step-card").forEach((c) => c.classList.remove("active"));
+      $(id).classList.add("active");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function alertMsg(msg, kind = "danger") {
+      $("alertBox").innerHTML =
+        `<div class="alert alert-${kind} alert-dismissible fade show" role="alert">` +
+        `${msg}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>`;
+    }
+
+    async function api(path, options = {}) {
+      const res = await fetch(`/api/${path}`, options);
+      const text = await res.text();
+      let data = null;
+      try { data = text ? JSON.parse(text) : null; } catch { data = text; }
+      if (!res.ok) {
+        const detail = (data && data.detail) || `Request failed (${res.status})`;
+        throw new Error(detail);
+      }
+      return data;
+    }
+
+    function initials(name) {
+      return name.trim().slice(0, 2).toUpperCase() || "?";
+    }
+
+    // ---- STEP 1: OCR ----
+    $("btnOcr").addEventListener("click", async () => {
+      const file = $("receiptFile").files[0];
+      if (!file) { alertMsg("Please choose a receipt image first."); return; }
+      const spin = $("ocrSpin");
+      spin.classList.remove("d-none");
+      $("btnOcr").disabled = true;
+      try {
+        const form = new FormData();
+        form.append("file", file);
+        const receipt = await api("ocr", { method: "POST", body: form });
+        state.receipt = receipt;
+        renderItems(receipt);
+        showStep("step-items");
+      } catch (e) {
+        alertMsg(`OCR failed: ${e.message}`);
+      } finally {
+        spin.classList.add("d-none");
+        $("btnOcr").disabled = false;
+      }
+    });
+
+    function money(n) { return Number(n || 0).toFixed(2); }
+
+    function renderItems(receipt) {
+      const body = $("itemsBody");
+      body.innerHTML = "";
+      (receipt.items || []).forEach((it) => {
+        const low = it.confidence < 0.7;
+        const badge = low
+          ? `<span class="badge bg-warning text-dark confidence-badge">⚠ ${(it.confidence*100).toFixed(0)}%</span>`
+          : `<span class="badge bg-success confidence-badge">${(it.confidence*100).toFixed(0)}%</span>`;
+        body.insertAdjacentHTML("beforeend",
+          `<tr><td>${escapeHtml(it.name)}</td><td class="text-end">${it.quantity}</td>` +
+          `<td class="text-end">${money(it.price)}</td><td class="text-center">${badge}</td></tr>`);
+      });
+      $("sumSubtotal").textContent = money(receipt.subtotal);
+      $("sumTax").textContent = money(receipt.tax);
+      $("sumTotal").textContent = money(receipt.total);
+    }
+
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"']/g, (c) =>
+        ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+    }
+
+    // ---- STEP 2: create session ----
+    $("btnCreateSession").addEventListener("click", async () => {
+      if (!state.receipt) { alertMsg("No receipt loaded."); return; }
+      try {
+        const session = await api("sessions", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: $("sessionName").value || "Untitled",
+            created_by: $("paidBy").value || "Me",
+            receipt: state.receipt,
+          }),
+        });
+        state.sessionId = session.id;
+        state.assignments = {};
+        await loadFriends();
+        renderAssignTable();
+        showStep("step-assign");
+      } catch (e) {
+        alertMsg(`Could not start session: ${e.message}`);
+      }
+    });
+
+    // ---- STEP 3: friends + assignment ----
+    async function loadFriends() {
+      state.friends = await api("friends");
+      if (state.friends.length && !state.activeFriend) {
+        state.activeFriend = state.friends[0].id;
+      }
+      renderFriendChips();
+    }
+
+    $("btnAddFriend").addEventListener("click", async () => {
+      const name = $("friendName").value.trim();
+      if (!name) { alertMsg("Enter a friend's name."); return; }
+      try {
+        const friend = await api("friends", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name }),
+        });
+        $("friendName").value = "";
+        state.activeFriend = friend.id;
+        await loadFriends();
+        renderAssignTable();
+      } catch (e) {
+        alertMsg(`Could not add friend: ${e.message}`);
+      }
+    });
+
+    $("friendName").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") { e.preventDefault(); $("btnAddFriend").click(); }
+    });
+
+    function renderFriendChips() {
+      const box = $("friendChips");
+      box.innerHTML = "";
+      if (!state.friends.length) {
+        box.innerHTML = `<span class="text-muted small">No friends yet — add some above.</span>`;
+        return;
+      }
+      state.friends.forEach((f) => {
+        const active = f.id === state.activeFriend;
+        box.insertAdjacentHTML("beforeend",
+          `<button class="btn btn-sm friend-chip ${active ? "btn-primary" : "btn-outline-secondary"}" data-fid="${f.id}">` +
+          `<span class="avatar me-1" style="background:${f.avatar_color}">${initials(f.name)}</span>` +
+          `${escapeHtml(f.name)}</button>`);
+      });
+      box.querySelectorAll("[data-fid]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          state.activeFriend = btn.dataset.fid;
+          renderFriendChips();
+        });
+      });
+    }
+
+    function renderAssignTable() {
+      const body = $("assignBody");
+      body.innerHTML = "";
+      (state.receipt.items || []).forEach((it) => {
+        const sharers = state.assignments[it.name] || new Set();
+        const chips = [...sharers].map((fid) => {
+          const f = state.friends.find((x) => x.id === fid);
+          if (!f) return "";
+          return `<span class="avatar me-1" title="${escapeHtml(f.name)}" style="background:${f.avatar_color}">${initials(f.name)}</span>`;
+        }).join("");
+        const row = document.createElement("tr");
+        row.className = "item-row assignable";
+        row.innerHTML =
+          `<td>${escapeHtml(it.name)}</td><td class="text-end">${money(it.price)}</td>` +
+          `<td>${chips || '<span class="text-muted small">— tap to assign active friend —</span>'}</td>`;
+        row.addEventListener("click", () => toggleAssign(it.name, row));
+        body.appendChild(row);
+      });
+    }
+
+    function toggleAssign(itemName, row) {
+      if (!state.activeFriend) { alertMsg("Add and select a friend first.", "warning"); return; }
+      const set = state.assignments[itemName] || new Set();
+      if (set.has(state.activeFriend)) set.delete(state.activeFriend);
+      else set.add(state.activeFriend);
+      state.assignments[itemName] = set;
+      renderAssignTable();
+    }
+
+    // ---- STEP 4: summary ----
+    $("btnSummary").addEventListener("click", async () => {
+      try {
+        const payload = {};
+        for (const [item, set] of Object.entries(state.assignments)) {
+          if (set.size) payload[item] = [...set];
+        }
+        await api(`sessions/${state.sessionId}/assign`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ assignments: payload }),
+        });
+        const summary = await api(`sessions/${state.sessionId}/summary`);
+        renderSummary(summary);
+        showStep("step-summary");
+      } catch (e) {
+        alertMsg(`Could not compute summary: ${e.message}`);
+      }
+    });
+
+    function renderSummary(summary) {
+      $("summaryPaidBy").textContent = summary.paid_by || "—";
+      const list = $("summaryList");
+      list.innerHTML = "";
+      const entries = Object.entries(summary.breakdown || {});
+      if (!entries.length) {
+        list.innerHTML = `<li class="list-group-item text-muted">No items assigned yet.</li>`;
+      }
+      entries.forEach(([fid, amount]) => {
+        const f = state.friends.find((x) => x.id === fid);
+        const name = f ? f.name : fid;
+        const color = f ? f.avatar_color : "#888";
+        list.insertAdjacentHTML("beforeend",
+          `<li class="list-group-item d-flex justify-content-between align-items-center">` +
+          `<span><span class="avatar me-2" style="background:${color}">${initials(name)}</span>${escapeHtml(name)}</span>` +
+          `<span class="badge bg-primary rounded-pill">${money(amount)}</span></li>`);
+      });
+      $("summaryTotal").textContent = money(summary.total);
+    }
+
+    $("btnRestart").addEventListener("click", () => {
+      state.receipt = null; state.sessionId = null;
+      state.activeFriend = null; state.assignments = {};
+      $("receiptFile").value = "";
+      showStep("step-upload");
+    });
+  </script>
+</body>
+</html>
