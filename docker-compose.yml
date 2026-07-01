@@ -17,6 +17,9 @@ services:
     environment:
       - GOOGLE_API_KEY=${GOOGLE_API_KEY}
       - DB_PATH=data/duitsplit.db
+      - DATA_DIR=data
+      - SESSION_TTL_HOURS=24
+      - SWEEP_INTERVAL_SECONDS=3600
     volumes:
       - backend-data:/app/data
     extra_hosts:

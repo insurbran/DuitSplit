@@ -14,16 +14,20 @@
     body { background: #f6f8fb; }
     .step-card { display: none; }
     .step-card.active { display: block; }
-    .confidence-badge { font-size: .7rem; }
-    .friend-chip { cursor: grab; user-select: none; }
+    .confidence-badge { font-size: .72rem; }
+    .friend-chip { cursor: pointer; user-select: none; }
     .item-row.assignable { cursor: pointer; }
-    .item-row.selected { background: #e7f1ff; }
     .avatar {
       width: 28px; height: 28px; border-radius: 50%;
       display: inline-flex; align-items: center; justify-content: center;
       color: #fff; font-size: .75rem; font-weight: 600;
     }
+    .dot { width: 14px; height: 14px; border-radius: 50%; display: inline-block; }
     .navbar-brand b { color: #0d6efd; }
+    .qr-img { width: 500px; height: 500px; max-width: 90vw; object-fit: contain; border: 1px solid #eee; border-radius: 10px; background:#fff; padding: 6px; }
+    .edit-input { max-width: 120px; }
+    .low-conf input { border-color: #ffc107; background: #fff9e6; }
+    .friend-card { border-left: 5px solid #ccc; }
   </style>
 </head>
 <body>
@@ -34,128 +38,147 @@
     </div>
   </nav>
 
-  <div class="container pb-5" style="max-width: 880px;">
+  <div class="container pb-5" style="max-width: 920px;">
     <div id="alertBox"></div>
 
-    <!-- STEP 1: Upload -->
+    <!-- STEP 1: Upload receipt + QR -->
     <div class="card step-card active shadow-sm" id="step-upload">
       <div class="card-body">
-        <h5 class="card-title">1 · Upload receipt</h5>
-        <p class="text-muted">Snap or upload a photo of your receipt to extract items.</p>
-        <input type="file" class="form-control mb-3" id="receiptFile" accept="image/*" />
-        <button class="btn btn-primary" id="btnOcr">
-          <span class="spinner-border spinner-border-sm d-none" id="ocrSpin"></span>
+        <h5 class="card-title">1 · Upload</h5>
+        <p class="text-muted">Upload your receipt and your DuitNow / TNG QR code. Both are required.</p>
+        <div class="row g-3">
+          <div class="col-12 col-md-6">
+            <label class="form-label">📄 Receipt photo</label>
+            <input type="file" class="form-control" id="receiptFile" accept="image/*" />
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="form-label">💳 Your QR code</label>
+            <input type="file" class="form-control" id="qrFile" accept="image/*" />
+          </div>
+        </div>
+        <button class="btn btn-primary mt-3" id="btnUpload" disabled>
+          <span class="spinner-border spinner-border-sm d-none" id="upSpin"></span>
           Extract items
         </button>
       </div>
     </div>
 
-    <!-- STEP 2: Review items -->
+    <!-- STEP 2: Review + edit items -->
     <div class="card step-card shadow-sm" id="step-items">
       <div class="card-body">
-        <h5 class="card-title">2 · Review extracted items</h5>
-        <p class="text-muted">Items below <b>70%</b> confidence are flagged — double-check them.</p>
+        <h5 class="card-title">2 · Review &amp; edit items</h5>
+        <div id="timingBox" class="small text-muted mb-2"></div>
+        <p class="text-muted">Fix any wrong names or prices. Low-confidence rows (yellow) are highlighted.</p>
         <div class="table-responsive">
           <table class="table align-middle">
             <thead>
-              <tr><th>Item</th><th class="text-end">Qty</th><th class="text-end">Price</th><th class="text-center">Confidence</th></tr>
+              <tr><th>Item</th><th class="text-end" style="width:90px">Qty</th><th class="text-end" style="width:140px">Price</th><th class="text-center" style="width:110px">Confidence</th></tr>
             </thead>
             <tbody id="itemsBody"></tbody>
           </table>
         </div>
-        <div class="d-flex justify-content-between border-top pt-2">
-          <div class="text-muted">
-            Subtotal: <b id="sumSubtotal">0.00</b> ·
-            Tax: <b id="sumTax">0.00</b> ·
-            Total: <b id="sumTotal">0.00</b>
+        <div class="row g-2 align-items-center border-top pt-3">
+          <div class="col-auto"><label class="form-label mb-0">Tax rate (%)</label></div>
+          <div class="col-auto">
+            <input type="number" step="0.01" class="form-control edit-input" id="taxInput" />
+          </div>
+          <div class="col-auto"><span id="taxBadge"></span></div>
+          <div class="col text-end text-muted">
+            Subtotal: <b id="sumSubtotal">0.00</b> · Total: <b id="sumTotal">0.00</b>
           </div>
         </div>
         <hr />
-        <div class="mb-3">
-          <label class="form-label">Session name</label>
-          <input type="text" class="form-control" id="sessionName" placeholder="Dinner at Mamak" />
+        <div class="row g-3">
+          <div class="col-12 col-md-6">
+            <label class="form-label">Session name</label>
+            <input type="text" class="form-control" id="sessionName" placeholder="Dinner at Mamak" />
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="form-label">Your name (paid the bill)</label>
+            <input type="text" class="form-control" id="paidBy" placeholder="Brandon" />
+          </div>
         </div>
-        <div class="mb-3">
-          <label class="form-label">Your name (paid the bill)</label>
-          <input type="text" class="form-control" id="paidBy" placeholder="Brandon" />
-        </div>
-        <button class="btn btn-primary" id="btnCreateSession">Start splitting →</button>
+        <button class="btn btn-primary mt-3" id="btnConfirm">Confirm and continue →</button>
       </div>
     </div>
 
     <!-- STEP 3: Friends + assignment -->
     <div class="card step-card shadow-sm" id="step-assign">
       <div class="card-body">
-        <h5 class="card-title">3 · Add friends & assign items</h5>
-
+        <h5 class="card-title">3 · Add friends &amp; assign items</h5>
         <div class="row g-2 mb-3">
-          <div class="col">
-            <input type="text" class="form-control" id="friendName" placeholder="Add a friend's name" />
-          </div>
-          <div class="col-auto">
-            <button class="btn btn-outline-primary" id="btnAddFriend">+ Add</button>
-          </div>
+          <div class="col"><input type="text" class="form-control" id="friendName" placeholder="Add a friend's name" /></div>
+          <div class="col-auto"><button class="btn btn-outline-primary" id="btnAddFriend">+ Add</button></div>
         </div>
-
         <div class="mb-3">
-          <div class="text-muted small mb-1">Pick the active friend, then click their items:</div>
+          <div class="text-muted small mb-1">Pick the active friend, then tap items to assign (tap again to unassign):</div>
           <div id="friendChips" class="d-flex flex-wrap gap-2"></div>
         </div>
-
         <div class="table-responsive">
           <table class="table align-middle">
-            <thead>
-              <tr><th>Item</th><th class="text-end">Price</th><th>Shared by</th></tr>
-            </thead>
+            <thead><tr><th>Item</th><th class="text-end">Price</th><th>Shared by</th></tr></thead>
             <tbody id="assignBody"></tbody>
           </table>
         </div>
-
         <button class="btn btn-primary" id="btnSummary">View bill summary →</button>
       </div>
     </div>
 
-    <!-- STEP 4: Summary -->
+    <!-- STEP 4: Summary + paid tracking -->
     <div class="card step-card shadow-sm" id="step-summary">
       <div class="card-body">
         <h5 class="card-title">4 · Bill summary</h5>
         <p class="text-muted">Paid by <b id="summaryPaidBy"></b>. Here's what everyone owes:</p>
-        <ul class="list-group mb-3" id="summaryList"></ul>
-        <div class="d-flex justify-content-between border-top pt-2">
-          <span class="fw-bold">Total split</span>
-          <span class="fw-bold" id="summaryTotal">0.00</span>
+        <div id="summaryFriends"></div>
+        <div id="qrSection" class="text-center my-4 d-none">
+          <img class="qr-img" id="summaryQr" src="" alt="Payment QR code" />
+          <div class="small mt-2">Open TNG → Scan this QR → pay your amount above</div>
         </div>
-        <button class="btn btn-outline-secondary mt-3" id="btnRestart">Start over</button>
+        <div class="d-flex justify-content-between border-top pt-3 mt-3 fw-bold">
+          <span>Total: RM<span id="totTotal">0.00</span></span>
+          <span class="text-success">Paid: RM<span id="totPaid">0.00</span></span>
+          <span class="text-danger">Remaining: RM<span id="totRemaining">0.00</span></span>
+        </div>
+        <button class="btn btn-success mt-3 d-none" id="btnComplete">🎉 Complete Session</button>
+        <div id="completeMsg" class="alert alert-success mt-3 d-none"></div>
       </div>
     </div>
   </div>
 
+  <script>window.INITIAL_SESSION_ID = "{{ session_id }}";</script>
   <script
     src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
     integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
     crossorigin="anonymous"></script>
   <script>
     const state = {
-      receipt: null,
-      sessionId: null,
-      friends: [],
-      activeFriend: null,
-      // item_name -> Set(friend_id)
-      assignments: {},
+      sessionId: null, receipt: null,
+      qrImagePath: "", silverPath: "",
+      friends: [], activeFriend: null, assignments: {}, summary: null,
     };
-
     const $ = (id) => document.getElementById(id);
+    const money = (n) => Number(n || 0).toFixed(2);
 
     function showStep(id) {
       document.querySelectorAll(".step-card").forEach((c) => c.classList.remove("active"));
       $(id).classList.add("active");
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
-
     function alertMsg(msg, kind = "danger") {
       $("alertBox").innerHTML =
         `<div class="alert alert-${kind} alert-dismissible fade show" role="alert">` +
         `${msg}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>`;
+    }
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"']/g, (c) =>
+        ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+    }
+    const initials = (n) => (n || "?").trim().slice(0, 2).toUpperCase() || "?";
+    function confBadge(c) {
+      const pct = Math.round((c || 0) * 100);
+      return c >= 0.7
+        ? `<span class="badge bg-success confidence-badge">🟢 ${pct}%</span>`
+        : `<span class="badge bg-warning text-dark confidence-badge">🟡 ${pct}%</span>`;
     }
 
     async function api(path, options = {}) {
@@ -164,118 +187,186 @@
       let data = null;
       try { data = text ? JSON.parse(text) : null; } catch { data = text; }
       if (!res.ok) {
-        const detail = (data && data.detail) || `Request failed (${res.status})`;
+        const detail = (data && data.detail) || (data && data.error) || `Request failed (${res.status})`;
         throw new Error(detail);
       }
       return data;
     }
 
-    function initials(name) {
-      return name.trim().slice(0, 2).toUpperCase() || "?";
+    // ---- STEP 1: upload receipt + QR ----
+    function checkUploadReady() {
+      $("btnUpload").disabled = !($("receiptFile").files[0] && $("qrFile").files[0]);
     }
+    $("receiptFile").addEventListener("change", checkUploadReady);
+    $("qrFile").addEventListener("change", checkUploadReady);
 
-    // ---- STEP 1: OCR ----
-    $("btnOcr").addEventListener("click", async () => {
-      const file = $("receiptFile").files[0];
-      if (!file) { alertMsg("Please choose a receipt image first."); return; }
-      const spin = $("ocrSpin");
+    $("btnUpload").addEventListener("click", async () => {
+      const receiptF = $("receiptFile").files[0];
+      const qrF = $("qrFile").files[0];
+      if (!receiptF || !qrF) { alertMsg("Please choose both a receipt and a QR image."); return; }
+      const spin = $("upSpin");
       spin.classList.remove("d-none");
-      $("btnOcr").disabled = true;
+      $("btnUpload").disabled = true;
       try {
         const form = new FormData();
-        form.append("file", file);
-        const receipt = await api("ocr", { method: "POST", body: form });
-        state.receipt = receipt;
-        renderItems(receipt);
+        form.append("receipt", receiptF);
+        form.append("qr", qrF);
+        const res = await api("upload", { method: "POST", body: form });
+        if (!res.receipt.is_valid_receipt) {
+          alertMsg(`That doesn't look like a receipt: ${escapeHtml(res.receipt.validation_reason || "please try another photo.")}`, "warning");
+          return;
+        }
+        if (!res.receipt.items || res.receipt.items.length === 0) {
+          alertMsg("No items were extracted. The AI parse likely failed — check your Gemini API key/quota in the backend logs, then re-upload.", "warning");
+          return;
+        }
+        state.sessionId = res.session_id;
+        state.receipt = res.receipt;
+        state.qrImagePath = res.qr_image_path;
+        state.silverPath = res.silver_path;
+        const secs = (res.processing_ms / 1000).toFixed(1);
+        $("timingBox").innerHTML = `⚡ Extracted in ${secs}s` +
+          (res.receipt.cached ? " (from cache)" : "") +
+          (res.timeout_warning ? ` — <span class="text-danger">slow extraction, Gemini took over 15s</span>` : "");
+        renderEditableItems(res.receipt);
         showStep("step-items");
       } catch (e) {
-        alertMsg(`OCR failed: ${e.message}`);
+        alertMsg(`Upload failed: ${e.message}`);
       } finally {
         spin.classList.add("d-none");
-        $("btnOcr").disabled = false;
+        $("btnUpload").disabled = false;
       }
     });
 
-    function money(n) { return Number(n || 0).toFixed(2); }
-
-    function renderItems(receipt) {
+    // ---- STEP 2: editable items ----
+    function renderEditableItems(receipt) {
       const body = $("itemsBody");
       body.innerHTML = "";
       (receipt.items || []).forEach((it) => {
         const low = it.confidence < 0.7;
-        const badge = low
-          ? `<span class="badge bg-warning text-dark confidence-badge">⚠ ${(it.confidence*100).toFixed(0)}%</span>`
-          : `<span class="badge bg-success confidence-badge">${(it.confidence*100).toFixed(0)}%</span>`;
-        body.insertAdjacentHTML("beforeend",
-          `<tr><td>${escapeHtml(it.name)}</td><td class="text-end">${it.quantity}</td>` +
-          `<td class="text-end">${money(it.price)}</td><td class="text-center">${badge}</td></tr>`);
+        const tr = document.createElement("tr");
+        if (low) tr.className = "low-conf";
+        tr.dataset.conf = it.confidence;
+        tr.dataset.id = it.id;
+        tr.innerHTML =
+          `<td><input class="form-control i-name" value="${escapeHtml(it.name)}" /></td>` +
+          `<td><input type="number" min="1" class="form-control i-qty text-end" value="${it.quantity}" /></td>` +
+          `<td><input type="number" step="0.01" class="form-control i-price text-end" value="${Number(it.price).toFixed(2)}" /></td>` +
+          `<td class="text-center">${confBadge(it.confidence)}</td>`;
+        body.appendChild(tr);
       });
-      $("sumSubtotal").textContent = money(receipt.subtotal);
-      $("sumTax").textContent = money(receipt.tax);
-      $("sumTotal").textContent = money(receipt.total);
+      // Show the tax rate without trailing ".00" (keeps real decimals if any).
+      $("taxInput").value = String(Number(receipt.tax_percent || 0));
+      $("taxBadge").innerHTML = confBadge(receipt.tax_confidence);
+      body.querySelectorAll("input").forEach((i) => i.addEventListener("input", recalcTotals));
+      $("taxInput").addEventListener("input", recalcTotals);
+      recalcTotals();
+      // Auto-focus the first low-confidence item so Brandon notices it.
+      const firstLow = body.querySelector(".low-conf .i-price");
+      if (firstLow) { firstLow.focus(); firstLow.select(); }
     }
 
-    function escapeHtml(s) {
-      return String(s).replace(/[&<>"']/g, (c) =>
-        ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+    function recalcTotals() {
+      let subtotal = 0;
+      document.querySelectorAll("#itemsBody tr").forEach((r) => {
+        subtotal += parseFloat(r.querySelector(".i-price").value) || 0;
+      });
+      const pct = parseFloat($("taxInput").value) || 0;
+      const tax = subtotal * pct / 100;
+      $("sumSubtotal").textContent = money(subtotal);
+      $("sumTotal").textContent = money(subtotal + tax);
     }
 
-    // ---- STEP 2: create session ----
-    $("btnCreateSession").addEventListener("click", async () => {
-      if (!state.receipt) { alertMsg("No receipt loaded."); return; }
+    function collectReceipt() {
+      const items = [...document.querySelectorAll("#itemsBody tr")].map((r) => ({
+        id: r.dataset.id,
+        name: r.querySelector(".i-name").value.trim() || "Item",
+        quantity: parseInt(r.querySelector(".i-qty").value) || 1,
+        price: parseFloat(r.querySelector(".i-price").value) || 0,
+        confidence: parseFloat(r.dataset.conf) || 0,
+      }));
+      const pct = parseFloat($("taxInput").value) || 0;
+      const subtotal = items.reduce((s, i) => s + i.price, 0);
+      const tax = subtotal * pct / 100;
+      return {
+        ...state.receipt,
+        items,
+        tax_percent: pct,
+        tax_amount: Number(tax.toFixed(2)),
+        subtotal,
+        total: subtotal + tax,
+      };
+    }
+
+    $("btnConfirm").addEventListener("click", async () => {
       try {
-        const session = await api("sessions", {
+        state.receipt = collectReceipt();
+        await api("sessions", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
+            id: state.sessionId,
             name: $("sessionName").value || "Untitled",
             created_by: $("paidBy").value || "Me",
             receipt: state.receipt,
+            qr_image_path: state.qrImagePath,
+            silver_path: state.silverPath,
           }),
         });
-        state.sessionId = session.id;
-        state.assignments = {};
-        await loadFriends();
+        renderFriendChips();
         renderAssignTable();
         showStep("step-assign");
       } catch (e) {
-        alertMsg(`Could not start session: ${e.message}`);
+        alertMsg(`Could not save session: ${e.message}`);
       }
     });
 
     // ---- STEP 3: friends + assignment ----
-    async function loadFriends() {
-      state.friends = await api("friends");
-      if (state.friends.length && !state.activeFriend) {
-        state.activeFriend = state.friends[0].id;
-      }
-      renderFriendChips();
-    }
-
     $("btnAddFriend").addEventListener("click", async () => {
       const name = $("friendName").value.trim();
       if (!name) { alertMsg("Enter a friend's name."); return; }
       try {
-        const friend = await api("friends", {
+        const friend = await api(`sessions/${state.sessionId}/friends`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ name }),
         });
-        $("friendName").value = "";
+        state.friends.push(friend);
         state.activeFriend = friend.id;
-        await loadFriends();
+        $("friendName").value = "";
+        renderFriendChips();
         renderAssignTable();
       } catch (e) {
         alertMsg(`Could not add friend: ${e.message}`);
       }
     });
-
     $("friendName").addEventListener("keydown", (e) => {
       if (e.key === "Enter") { e.preventDefault(); $("btnAddFriend").click(); }
     });
 
+    const friendById = (id) => state.friends.find((f) => f.id === id);
+
+    function clientShares() {
+      const priceOf = {}; assignableUnits().forEach((u) => (priceOf[u.unitId] = u.price));
+      const acc = {}; state.friends.forEach((f) => (acc[f.id] = { subtotal: 0 }));
+      for (const [unitId, set] of Object.entries(state.assignments)) {
+        const ids = [...set].filter((id) => acc[id]);
+        if (!ids.length || priceOf[unitId] == null) continue;
+        const share = priceOf[unitId] / ids.length;
+        ids.forEach((id) => (acc[id].subtotal += share));
+      }
+      const pct = Number(state.receipt.tax_percent) || 0;
+      const out = {};
+      state.friends.forEach((f) => {
+        const sub = acc[f.id].subtotal;
+        out[f.id] = sub + sub * pct / 100;
+      });
+      return out;
+    }
+
     function renderFriendChips() {
       const box = $("friendChips");
+      const totals = clientShares();
       box.innerHTML = "";
       if (!state.friends.length) {
         box.innerHTML = `<span class="text-muted small">No friends yet — add some above.</span>`;
@@ -286,58 +377,64 @@
         box.insertAdjacentHTML("beforeend",
           `<button class="btn btn-sm friend-chip ${active ? "btn-primary" : "btn-outline-secondary"}" data-fid="${f.id}">` +
           `<span class="avatar me-1" style="background:${f.avatar_color}">${initials(f.name)}</span>` +
-          `${escapeHtml(f.name)}</button>`);
+          `${escapeHtml(f.name)} · RM${money(totals[f.id])}</button>`);
       });
-      box.querySelectorAll("[data-fid]").forEach((btn) => {
-        btn.addEventListener("click", () => {
-          state.activeFriend = btn.dataset.fid;
-          renderFriendChips();
-        });
+      box.querySelectorAll("[data-fid]").forEach((btn) =>
+        btn.addEventListener("click", () => { state.activeFriend = btn.dataset.fid; renderFriendChips(); }));
+    }
+
+    // Expand each line item into individual units (qty 2 -> two units).
+    function assignableUnits() {
+      const units = [];
+      (state.receipt.items || []).forEach((it) => {
+        const q = it.quantity && it.quantity > 0 ? it.quantity : 1;
+        const unitPrice = it.price / q;
+        for (let n = 0; n < q; n++) {
+          const label = q > 1 ? `${it.name} (${n + 1} of ${q})` : it.name;
+          units.push({ unitId: `${it.id}#${n}`, label, price: unitPrice });
+        }
       });
+      return units;
     }
 
     function renderAssignTable() {
       const body = $("assignBody");
       body.innerHTML = "";
-      (state.receipt.items || []).forEach((it) => {
-        const sharers = state.assignments[it.name] || new Set();
+      assignableUnits().forEach((u) => {
+        const sharers = state.assignments[u.unitId] || new Set();
         const chips = [...sharers].map((fid) => {
-          const f = state.friends.find((x) => x.id === fid);
-          if (!f) return "";
-          return `<span class="avatar me-1" title="${escapeHtml(f.name)}" style="background:${f.avatar_color}">${initials(f.name)}</span>`;
+          const f = friendById(fid);
+          return f ? `<span class="avatar me-1" title="${escapeHtml(f.name)}" style="background:${f.avatar_color}">${initials(f.name)}</span>` : "";
         }).join("");
         const row = document.createElement("tr");
         row.className = "item-row assignable";
-        row.innerHTML =
-          `<td>${escapeHtml(it.name)}</td><td class="text-end">${money(it.price)}</td>` +
+        row.innerHTML = `<td>${escapeHtml(u.label)}</td><td class="text-end">${money(u.price)}</td>` +
           `<td>${chips || '<span class="text-muted small">— tap to assign active friend —</span>'}</td>`;
-        row.addEventListener("click", () => toggleAssign(it.name, row));
+        row.addEventListener("click", () => toggleAssign(u.unitId));
         body.appendChild(row);
       });
     }
 
-    function toggleAssign(itemName, row) {
+    function toggleAssign(itemId) {
       if (!state.activeFriend) { alertMsg("Add and select a friend first.", "warning"); return; }
-      const set = state.assignments[itemName] || new Set();
-      if (set.has(state.activeFriend)) set.delete(state.activeFriend);
-      else set.add(state.activeFriend);
-      state.assignments[itemName] = set;
+      const set = state.assignments[itemId] || new Set();
+      set.has(state.activeFriend) ? set.delete(state.activeFriend) : set.add(state.activeFriend);
+      state.assignments[itemId] = set;
       renderAssignTable();
+      renderFriendChips();
     }
 
-    // ---- STEP 4: summary ----
     $("btnSummary").addEventListener("click", async () => {
       try {
         const payload = {};
-        for (const [item, set] of Object.entries(state.assignments)) {
-          if (set.size) payload[item] = [...set];
-        }
+        for (const [item, set] of Object.entries(state.assignments)) if (set.size) payload[item] = [...set];
         await api(`sessions/${state.sessionId}/assign`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ assignments: payload }),
         });
         const summary = await api(`sessions/${state.sessionId}/summary`);
+        state.summary = summary;
         renderSummary(summary);
         showStep("step-summary");
       } catch (e) {
@@ -345,32 +442,86 @@
       }
     });
 
+    // ---- STEP 4: summary + paid tracking ----
     function renderSummary(summary) {
       $("summaryPaidBy").textContent = summary.paid_by || "—";
-      const list = $("summaryList");
-      list.innerHTML = "";
-      const entries = Object.entries(summary.breakdown || {});
-      if (!entries.length) {
-        list.innerHTML = `<li class="list-group-item text-muted">No items assigned yet.</li>`;
-      }
-      entries.forEach(([fid, amount]) => {
-        const f = state.friends.find((x) => x.id === fid);
-        const name = f ? f.name : fid;
-        const color = f ? f.avatar_color : "#888";
-        list.insertAdjacentHTML("beforeend",
-          `<li class="list-group-item d-flex justify-content-between align-items-center">` +
-          `<span><span class="avatar me-2" style="background:${color}">${initials(name)}</span>${escapeHtml(name)}</span>` +
-          `<span class="badge bg-primary rounded-pill">${money(amount)}</span></li>`);
+      const box = $("summaryFriends");
+      box.innerHTML = "";
+      (summary.friends || []).forEach((f) => {
+        const itemsHtml = f.items.map((i) => `<div>${escapeHtml(i.name)}: RM${money(i.price)}</div>`).join("");
+        box.insertAdjacentHTML("beforeend",
+          `<div class="card friend-card mb-3" style="border-left-color:${f.avatar_color}">
+             <div class="card-body">
+               <div class="d-flex justify-content-between align-items-center mb-2">
+                 <span class="fw-bold"><span class="dot me-2" style="background:${f.avatar_color}"></span>${escapeHtml(f.name)}</span>
+                 <div class="form-check">
+                   <input class="form-check-input paid-check" type="checkbox" data-fid="${f.friend_id}" id="paid_${f.friend_id}" ${f.is_paid ? "checked disabled" : ""}>
+                   <label class="form-check-label" for="paid_${f.friend_id}">Mark as Paid</label>
+                 </div>
+               </div>
+               <div class="text-muted small mb-1">${itemsHtml}</div>
+               <div>Tax share: RM${money(f.tax_share)}</div>
+               <div class="fw-bold">Total: RM${money(f.total_owed)}</div>
+             </div>
+           </div>`);
       });
-      $("summaryTotal").textContent = money(summary.total);
+      // One shared QR at the bottom (it's the payer's single QR for everyone).
+      $("summaryQr").src = `/api/sessions/${summary.session_id}/qr`;
+      $("qrSection").classList.remove("d-none");
+      box.querySelectorAll(".paid-check").forEach((c) =>
+        c.addEventListener("change", () => markPaid(c.dataset.fid)));
+      updateTotals();
     }
 
-    $("btnRestart").addEventListener("click", () => {
-      state.receipt = null; state.sessionId = null;
-      state.activeFriend = null; state.assignments = {};
-      $("receiptFile").value = "";
-      showStep("step-upload");
+    function updateTotals() {
+      const s = state.summary;
+      const paid = s.friends.filter((f) => f.is_paid).reduce((a, f) => a + f.total_owed, 0);
+      const total = s.total;
+      $("totTotal").textContent = money(total);
+      $("totPaid").textContent = money(paid);
+      $("totRemaining").textContent = money(total - paid);
+      const allPaid = s.friends.length > 0 && s.friends.every((f) => f.is_paid);
+      $("btnComplete").classList.toggle("d-none", !allPaid);
+    }
+
+    async function markPaid(fid) {
+      try {
+        await api(`sessions/${state.sessionId}/friends/${fid}/paid`, { method: "PATCH" });
+        const f = state.summary.friends.find((x) => x.friend_id === fid);
+        if (f) f.is_paid = true;
+        const cb = $(`paid_${fid}`);
+        if (cb) cb.disabled = true;
+        updateTotals();
+      } catch (e) {
+        alertMsg(`Could not mark paid: ${e.message}`);
+      }
+    }
+
+    $("btnComplete").addEventListener("click", () => {
+      $("btnComplete").classList.add("d-none");
+      const msg = $("completeMsg");
+      msg.textContent = "All paid! Session complete 🎉  Redirecting home…";
+      msg.classList.remove("d-none");
+      setTimeout(() => { window.location.href = "/"; }, 3000);
     });
+
+    // ---- Multi-user: open a shared session and jump to summary ----
+    async function loadExistingSession(id) {
+      try {
+        const session = await api(`sessions/${id}`);
+        state.sessionId = id;
+        state.receipt = session.receipt;
+        state.friends = session.friends || [];
+        const summary = await api(`sessions/${id}/summary`);
+        state.summary = summary;
+        renderSummary(summary);
+        showStep("step-summary");
+      } catch (e) {
+        alertMsg(`Could not open that session: ${e.message}`);
+        showStep("step-upload");
+      }
+    }
+    if (window.INITIAL_SESSION_ID) loadExistingSession(window.INITIAL_SESSION_ID);
   </script>
 </body>
 </html>

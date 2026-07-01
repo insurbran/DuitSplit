@@ -1,0 +1,3 @@
+gemini-2.5-flash 5 250K 20
+gemini-2.5-flash-lite 10 250K 20
+gemini-3-flash-preview 5 250K 20

@@ -35,7 +35,19 @@ _HOP_BY_HOP = {
 
 @app.get("/", response_class=HTMLResponse)
 def index(request: Request) -> HTMLResponse:
-    return templates.TemplateResponse("index.html", {"request": request})
+    return templates.TemplateResponse(
+        "index.html",
+        {"request": request, "backend_url": BACKEND_URL, "session_id": ""},
+    )
+
+
+@app.get("/session/{session_id}", response_class=HTMLResponse)
+def session_view(request: Request, session_id: str) -> HTMLResponse:
+    """Shareable session URL: open the same split on any device."""
+    return templates.TemplateResponse(
+        "index.html",
+        {"request": request, "backend_url": BACKEND_URL, "session_id": session_id},
+    )
 
 
 @app.api_route(
@@ -52,6 +64,15 @@ async def proxy(path: str, request: Request) -> Response:
         for k, v in request.headers.items()
         if k.lower() not in {"host", "content-length"}
     }
+
+    # Preserve the real client IP so the backend can rate-limit per user,
+    # not per (shared) proxy address.
+    client_host = request.client.host if request.client else ""
+    if client_host:
+        existing = request.headers.get("x-forwarded-for")
+        headers["X-Forwarded-For"] = (
+            f"{existing}, {client_host}" if existing else client_host
+        )
 
     try:
         async with httpx.AsyncClient(timeout=120.0) as client:
