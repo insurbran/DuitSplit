@@ -10,8 +10,9 @@ WORKDIR /app
 COPY pyproject.toml uv.lock ./
 RUN uv sync --frozen --no-dev
 
-# Copy application source.
+# Copy application source and helper scripts.
 COPY src/ ./src/
+COPY scripts/ ./scripts/
 
 ENV PATH="/app/.venv/bin:$PATH"
 ENV PYTHONUNBUFFERED=1
