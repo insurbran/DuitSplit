@@ -10,106 +10,228 @@
     integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
     crossorigin="anonymous"
   />
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+    rel="stylesheet">
   <style>
-    body { background: #f6f8fb; font-size: 16px; }
-    .navbar-brand b { color: #0d6efd; }
-    .btn { min-height: 44px; }              /* touch target */
-    .session-card { border: none; border-radius: 14px; box-shadow: 0 4px 14px rgba(0,0,0,.06); }
-    .progress { height: 8px; }
-    .remaining { color: #dc3545; font-weight: 600; }
+  body{
+    min-height:100vh;
+    background:
+      radial-gradient(circle at top left, rgba(180,83,9,.18), transparent 38%),
+      radial-gradient(circle at bottom right, rgba(128,0,32,.16), transparent 40%),
+      linear-gradient(135deg,#fff7ed,#ffe4e6,#fef3c7);
+    color:#3b0a12;
+    font-family:Inter,system-ui,sans-serif;
+  }
+  .navbar{
+    background:rgba(255,247,237,.9)!important;
+    backdrop-filter:blur(20px);
+    border-bottom:1px solid rgba(128,0,32,.12);
+  }
+  .navbar-brand{ color:#3b0a12!important; }
+
+  .hero{
+    margin-top:28px;
+    padding:42px;
+    border-radius:34px;
+    background:rgba(255,255,255,.82);
+    border:1px solid rgba(128,0,32,.16);
+    box-shadow:0 28px 75px rgba(128,0,32,.14);
+    backdrop-filter:blur(22px);
+  }
+  .hero-tag{
+    display:inline-block; padding:9px 16px; border-radius:999px;
+    background:#dbeafe; color:#2563eb; font-weight:800; font-size:.85rem;
+  }
+  .hero-title{ font-size:clamp(2.1rem,5vw,4rem); font-weight:950; letter-spacing:-2px; line-height:.95; color:#3b0a12; }
+  .hero-title span{ color:#b45309; }
+  .hero-desc{ color:#7c2d12; font-size:1.05rem; max-width:560px; }
+  .feature-box{
+    padding:10px 14px; border-radius:12px;
+    background:rgba(255,255,255,.78); border:1px solid rgba(128,0,32,.14);
+    color:#3b0a12; font-weight:800;
+  }
+  .feature-box i{ color:#800020; margin-right:7px; }
+  .hero-phone{
+    width:230px; height:310px; margin:auto; border-radius:42px;
+    background:linear-gradient(135deg,#800020,#b45309); padding:16px;
+    box-shadow:0 30px 70px rgba(128,0,32,.25); transform:rotate(4deg);
+  }
+  .phone-card{
+    height:100%; border-radius:32px; background:rgba(255,255,255,.18);
+    border:1px solid rgba(255,255,255,.25); color:white;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+  }
+  .phone-card i{ font-size:3.6rem; }
+
+  .btn-primary{
+    background:linear-gradient(135deg,#800020,#a52a2a); border:none;
+    box-shadow:0 12px 30px rgba(128,0,32,.4); border-radius:16px;
+    font-weight:850; padding:12px 20px; min-height:44px;
+  }
+  .btn-primary:hover{ transform:translateY(-2px); }
+
+  .session-card{
+    background:rgba(255,255,255,.85); border:1px solid rgba(128,0,32,.16);
+    border-radius:20px; box-shadow:0 16px 38px rgba(128,0,32,.10); overflow:hidden;
+  }
+  .session-card .card-body{ padding:22px; }
+  .session-name{ color:#3b0a12; font-weight:900; font-size:1.15rem; }
+  .paid-badge{
+    display:inline-block; padding:5px 12px; border-radius:999px;
+    background:#fff1c2; color:#800020; font-weight:800; font-size:.82rem;
+  }
+  .remaining{ color:#b91c1c; font-weight:800; }
+  .progress{ height:9px; border-radius:999px; background:rgba(128,0,32,.10); }
+  .progress-bar{ background:linear-gradient(135deg,#800020,#b45309); }
+  .btn-resume{
+    background:linear-gradient(135deg,#800020,#a52a2a); color:white; border:none;
+    border-radius:12px; font-weight:800; padding:9px 16px; min-height:44px;
+  }
+  .btn-resume:hover{ color:white; transform:translateY(-1px); }
+
+  .state-card{
+    background:rgba(255,255,255,.82); border:1px solid rgba(128,0,32,.16);
+    border-radius:20px; box-shadow:0 16px 38px rgba(128,0,32,.10);
+    padding:34px; text-align:center; color:#7c2d12;
+  }
+  .state-card .bi{ font-size:2.4rem; color:#800020; }
+  h5{ color:#3b0a12; }
+
+  @media (max-width:576px){
+    .hero{ padding:24px; }
+    .hero-phone{ margin-top:26px; }
+    .btn, .btn-primary{ width:100%; }
+  }
   </style>
 </head>
 <body>
-  <nav class="navbar navbar-light bg-white border-bottom mb-4">
-    <div class="container">
-      <span class="navbar-brand mb-0 h1">💸 <b>Duit</b>Split</span>
-      <span class="text-muted small">Receipt Bill Splitter</span>
-    </div>
-  </nav>
 
-  <div class="container pb-5" style="max-width: 620px;">
-    <div id="alertBox"></div>
+<nav class="navbar navbar-expand-lg shadow-sm sticky-top">
+  <div class="container">
+    <a class="navbar-brand fw-bold fs-3" href="/">
+      💸 <span style="color:#800020">Duit</span>Split
+    </a>
+    <span class="badge rounded-pill" style="background:#fff1c2;color:#800020;font-weight:800;">
+      <i class="bi bi-stars"></i> AI Powered
+    </span>
+  </div>
+</nav>
 
-    <div class="d-flex justify-content-between align-items-center mb-3">
-      <h5 class="mb-0">Active sessions</h5>
-      <a href="/new" class="btn btn-primary">+ New Session</a>
-    </div>
+<div class="container pb-5" style="max-width:1100px;">
 
-    <div id="sessionList">
-      <div class="text-center text-muted py-5">
-        <div class="spinner-border spinner-border-sm"></div> Loading…
+  <div id="alertBox"></div>
+
+  <!-- HERO -->
+  <section class="hero mb-5">
+    <div class="row align-items-center">
+      <div class="col-lg-7 text-center text-lg-start">
+        <span class="hero-tag">AI Receipt Bill Splitter</span>
+        <h1 class="hero-title mt-3">Split Bills <span>Smarter.</span></h1>
+        <p class="hero-desc mt-4 mx-auto mx-lg-0">
+          Upload your receipt, let AI detect every item, assign each friend,
+          calculate tax automatically and complete payment using DuitNow QR.
+        </p>
+        <div class="row mt-4 g-3 justify-content-center justify-content-lg-start">
+          <div class="col-auto"><div class="feature-box"><i class="bi bi-receipt"></i>AI OCR</div></div>
+          <div class="col-auto"><div class="feature-box"><i class="bi bi-people-fill"></i>Friend Split</div></div>
+          <div class="col-auto"><div class="feature-box"><i class="bi bi-qr-code"></i>QR Payment</div></div>
+        </div>
+      </div>
+      <div class="col-lg-5 text-center mt-4 mt-lg-0">
+        <div class="hero-phone">
+          <div class="phone-card">
+            <i class="bi bi-phone-fill"></i>
+            <h5 class="mt-3 text-white">Fast</h5>
+            <p class="mb-0 px-3">AI Powered Receipt Splitting</p>
+          </div>
+        </div>
       </div>
     </div>
+  </section>
+
+  <!-- ACTIVE SESSIONS -->
+  <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3 mb-3">
+    <h4 class="mb-0" style="color:#3b0a12;font-weight:900;">Active Sessions</h4>
+    <a href="/new" class="btn btn-primary"><i class="bi bi-plus-lg me-1"></i> New Session</a>
   </div>
 
-  <script
-    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-    integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
-    crossorigin="anonymous"></script>
-  <script>
-    const $ = (id) => document.getElementById(id);
-    const money = (n) => Number(n || 0).toFixed(2);
+  <div id="sessionList">
+    <div class="state-card"><div class="spinner-border spinner-border-sm"></div> Loading…</div>
+  </div>
 
-    function escapeHtml(s) {
-      return String(s).replace(/[&<>"']/g, (c) =>
-        ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+</div>
+
+<script
+  src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+  integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+  crossorigin="anonymous"></script>
+<script>
+  const $ = (id) => document.getElementById(id);
+  const money = (n) => Number(n || 0).toFixed(2);
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, (c) =>
+      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  }
+  function timeAgo(ts) {
+    if (!ts) return "";
+    const d = new Date(ts.replace(" ", "T") + "Z");
+    const secs = Math.floor((Date.now() - d.getTime()) / 1000);
+    if (secs < 60) return "just now";
+    if (secs < 3600) return `${Math.floor(secs / 60)} min ago`;
+    if (secs < 86400) return `${Math.floor(secs / 3600)} hours ago`;
+    if (secs < 172800) return "yesterday";
+    return `${Math.floor(secs / 86400)} days ago`;
+  }
+
+  async function loadSessions() {
+    try {
+      const res = await fetch("/api/sessions");
+      if (!res.ok) throw new Error(`Failed (${res.status})`);
+      render(await res.json());
+    } catch (e) {
+      $("sessionList").innerHTML =
+        `<div class="state-card">
+           <i class="bi bi-wifi-off"></i>
+           <h5 class="mt-2">Couldn't load sessions</h5>
+           <p class="mb-0">${escapeHtml(e.message)} — is the backend running?</p>
+         </div>`;
     }
+  }
 
-    // SQLite stores created_at as UTC "YYYY-MM-DD HH:MM:SS".
-    function timeAgo(ts) {
-      if (!ts) return "";
-      const d = new Date(ts.replace(" ", "T") + "Z");
-      const secs = Math.floor((Date.now() - d.getTime()) / 1000);
-      if (secs < 60) return "just now";
-      if (secs < 3600) return `${Math.floor(secs / 60)} min ago`;
-      if (secs < 86400) return `${Math.floor(secs / 3600)} hours ago`;
-      if (secs < 172800) return "yesterday";
-      return `${Math.floor(secs / 86400)} days ago`;
+  function render(sessions) {
+    const box = $("sessionList");
+    if (!sessions.length) {
+      box.innerHTML =
+        `<div class="state-card">
+           <i class="bi bi-receipt-cutoff"></i>
+           <h5 class="mt-2">No active sessions</h5>
+           <p class="mb-0">Tap <b>New Session</b> to split your first receipt.</p>
+         </div>`;
+      return;
     }
-
-    async function loadSessions() {
-      try {
-        const res = await fetch("/api/sessions");
-        if (!res.ok) throw new Error(`Failed (${res.status})`);
-        const sessions = await res.json();
-        render(sessions);
-      } catch (e) {
-        $("sessionList").innerHTML =
-          `<div class="alert alert-danger">Could not load sessions: ${escapeHtml(e.message)}</div>`;
-      }
-    }
-
-    function render(sessions) {
-      const box = $("sessionList");
-      if (!sessions.length) {
-        box.innerHTML =
-          `<div class="text-center text-muted py-5">
-             No active sessions yet.<br>Tap <b>+ New Session</b> to split a receipt.
-           </div>`;
-        return;
-      }
-      box.innerHTML = "";
-      sessions.forEach((s) => {
-        const pct = s.total_amount > 0 ? Math.round((s.paid_amount / s.total_amount) * 100) : 0;
-        box.insertAdjacentHTML("beforeend",
-          `<div class="card session-card mb-3">
-             <div class="card-body">
-               <div class="fw-bold mb-1">🍽️ ${escapeHtml(s.name || "Untitled")}</div>
-               <div class="text-muted small mb-2">
-                 ${s.friends_paid}/${s.friends_total} paid ·
-                 <span class="remaining">RM${money(s.remaining_amount)} remaining</span>
-               </div>
-               <div class="progress mb-2"><div class="progress-bar bg-success" style="width:${pct}%"></div></div>
-               <div class="d-flex justify-content-between align-items-center">
-                 <span class="text-muted small">Created ${timeAgo(s.created_at)}</span>
-                 <a href="/session/${s.id}" class="btn btn-sm btn-outline-primary">Resume Session →</a>
-               </div>
+    box.innerHTML = "";
+    sessions.forEach((s) => {
+      const pct = s.total_amount > 0 ? Math.round((s.paid_amount / s.total_amount) * 100) : 0;
+      box.insertAdjacentHTML("beforeend",
+        `<div class="session-card mb-3">
+           <div class="card-body">
+             <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-2">
+               <span class="session-name">🍽️ ${escapeHtml(s.name || "Untitled")}</span>
+               <span class="paid-badge">${s.friends_paid}/${s.friends_total} paid</span>
              </div>
-           </div>`);
-      });
-    }
+             <div class="mb-2"><span class="remaining">RM${money(s.remaining_amount)} remaining</span></div>
+             <div class="progress mb-3"><div class="progress-bar" style="width:${pct}%"></div></div>
+             <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+               <span style="color:#7c2d12;font-size:.85rem;">Created ${timeAgo(s.created_at)}</span>
+               <a href="/session/${s.id}" class="btn btn-resume">Resume Session <i class="bi bi-arrow-right ms-1"></i></a>
+             </div>
+           </div>
+         </div>`);
+    });
+  }
 
-    loadSessions();
-  </script>
+  loadSessions();
+</script>
 </body>
 </html>

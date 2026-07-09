@@ -934,6 +934,119 @@ h1,h2,h3,h4,h5,h6{
   color:#b45309!important;
 }
 
+/* ===================== UI FIX PASS ===================== */
+
+/* Fix 2 — progress bar: visible icons + gold completed lines */
+.circle{
+  background:#9ca3af!important;   /* inactive: medium gray, clearly visible */
+  color:#fff!important;
+  border:none!important;
+}
+.progress-item.active .circle{
+  background:linear-gradient(135deg,#800020,#b45309)!important;
+}
+.progress-item.done .circle{
+  background:linear-gradient(135deg,#5c0016,#7a0020)!important;
+  color:#fff!important;
+}
+.progress-item small{ color:#6b7280!important; font-weight:700!important; }
+.progress-item.active small{ color:#800020!important; font-weight:900!important; }
+.progress-item.done small{ color:#5c0016!important; font-weight:800!important; }
+.line{ background:#e5e7eb!important; }
+.line.done{ background:#d97706!important; }
+
+/* Fix 3 — centre the receipt / QR icons in their container */
+.upload-icon{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+}
+.upload-icon i{ font-size:2rem!important; color:#fff!important; }
+
+/* Fix 4 — AI Receipt Extraction card readable (was white-on-white) */
+.ai-status-card{
+  background:#fffdf7!important;
+  border:1px solid rgba(128,0,32,.16)!important;
+  box-shadow:0 12px 30px rgba(128,0,32,.08)!important;
+}
+.ai-status-card h6{ color:#3b0a12!important; }
+.ai-status-card p{ color:#374151!important; }
+
+/* Fix 5 — both upload boxes identical + clear "chosen" state */
+.upload-box, .qr-upload{ border:2px dashed #800020!important; border-radius:26px!important; }
+.upload-box.has-file{
+  border-style:solid!important;
+  border-color:#22c55e!important;
+  background:rgba(34,197,94,.10)!important;
+}
+.upload-box.has-file .upload-icon{
+  background:linear-gradient(135deg,#15803d,#22c55e)!important;
+}
+.upload-box.has-file .upload-icon i{ display:none!important; }
+.upload-box.has-file .upload-icon::after{
+  content:"\2713"; color:#fff; font-size:2.4rem; font-weight:900;
+}
+.upload-box.has-file .upload-note{
+  background:rgba(34,197,94,.15)!important; color:#15803d!important;
+}
+
+/* Fix 6 — "Bill Paid By": clean card, no gradient, no icon */
+.summary-banner{
+  background:#fffdf7!important;
+  color:#3b0a12!important;
+  border:1px solid rgba(128,0,32,.16)!important;
+  border-radius:16px!important;
+  box-shadow:0 12px 30px rgba(128,0,32,.08)!important;
+  padding:22px 26px!important;
+}
+.summary-banner small{ color:#6b7280!important; letter-spacing:.1em!important; }
+.summary-banner h4{ color:#3b0a12!important; font-weight:900!important; margin:6px 0 0!important; }
+
+/* Fix 8 — mobile touch targets + no horizontal scroll */
+html,body{ overflow-x:hidden; }
+.btn{ min-height:44px; }
+.form-check-input{ width:1.4em; height:1.4em; margin-top:.15em; }
+.item-row.assignable td{ padding-top:16px; padding-bottom:16px; }
+@media (max-width:576px){
+  .card-body{ padding:20px!important; }
+  .hero{ padding:22px!important; }
+  .qr-img{ width:260px!important; height:260px!important; }
+  .btn-lg{ font-size:1rem!important; }
+}
+
+/* Round the Total / Paid / Remaining stat cards */
+.summary-stat{ border-radius:16px!important; }
+
+/* Mobile review table: show full price/qty, tighter cells */
+@media (max-width:576px){
+  .modern-table thead th{ font-size:.6rem!important; padding:6px 4px!important; }
+  .modern-table tbody td{ padding:10px 5px!important; }
+  .modern-table .form-control{ padding:8px 6px!important; font-size:.92rem!important; width:100%!important; min-width:0!important; }
+  .modern-table .i-qty, .modern-table .i-price{ text-align:center!important; }
+}
+
+/* Mobile: stack the "add friend" field + button so the name field isn't clipped */
+@media (max-width:576px){
+  .friend-add-card .row > .col,
+  .friend-add-card .row > .col-auto{ flex:0 0 100%!important; max-width:100%!important; }
+  .friend-add-card .col-auto .btn{ width:100%!important; }
+  .friend-add-card .form-control-lg{ line-height:1.5; }
+}
+
+/* Mobile review table: give the ITEM name column most of the width */
+@media (max-width:576px){
+  #step-items .modern-table{ table-layout:fixed!important; width:100%!important; }
+  #step-items thead th{ padding:6px 3px!important; }
+  #step-items tbody td{ padding:8px 4px!important; }
+  #step-items thead th:nth-child(1){ width:42%!important; }
+  #step-items thead th:nth-child(2){ width:13%!important; }
+  #step-items thead th:nth-child(3){ width:23%!important; }
+  #step-items thead th:nth-child(4){ width:22%!important; }
+  #step-items .i-name{ font-size:.8rem!important; padding:8px 6px!important; }
+  #step-items .i-qty, #step-items .i-price{ padding:8px 4px!important; }
+  #step-items .confidence-badge{ font-size:.6rem!important; padding:6px 6px!important; }
+}
+
 </style>
 </head>
 <body>
@@ -1173,7 +1286,7 @@ h1,h2,h3,h4,h5,h6{
 
             <div class="col-12 col-md-6">
                 <label class="upload-box" for="receiptFile">
-                    <input type="file" id="receiptFile" accept="image/*" style="display:none;" />
+                    <input type="file" id="receiptFile" accept="image/*" capture="environment" style="display:none;" />
 
                     <div class="upload-icon">
                         <i class="bi bi-receipt-cutoff"></i>
@@ -1645,12 +1758,6 @@ h1,h2,h3,h4,h5,h6{
 
             </div>
 
-            <div>
-
-                <i class="bi bi-credit-card-2-front-fill display-5 text-primary"></i>
-
-            </div>
-
         </div>
 
         <div id="summaryFriends"></div>
@@ -1765,6 +1872,10 @@ h1,h2,h3,h4,h5,h6{
     const $ = (id) => document.getElementById(id);
     const money = (n) => Number(n || 0).toFixed(2);
 
+    const PILL_ICON = {
+      "pill-upload": "bi-upload", "pill-items": "bi-pencil-square",
+      "pill-assign": "bi-people-fill", "pill-summary": "bi-wallet2",
+    };
     function showStep(id) {
       document.querySelectorAll(".step-card").forEach((c) => c.classList.remove("active"));
       $(id).classList.add("active");
@@ -1776,14 +1887,20 @@ h1,h2,h3,h4,h5,h6{
       pills.forEach((pillId, index) => {
         const pill = $(pillId);
         if (!pill) return;
-
         pill.classList.remove("active", "done");
-
+        const icon = pill.querySelector(".circle i");
         if (index < currentIndex) {
           pill.classList.add("done");
-        } else if (index === currentIndex) {
-          pill.classList.add("active");
+          if (icon) icon.className = "bi bi-check-lg";   // completed → checkmark
+        } else {
+          if (icon) icon.className = "bi " + PILL_ICON[pillId];
+          if (index === currentIndex) pill.classList.add("active");
         }
+      });
+
+      // Gold-colour the connecting lines for completed segments.
+      document.querySelectorAll(".progress-container .line").forEach((ln, i) => {
+        ln.classList.toggle("done", i < currentIndex);
       });
 
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -1818,11 +1935,23 @@ h1,h2,h3,h4,h5,h6{
     }
 
     // ---- STEP 1: upload receipt + QR ----
+    function markChosen(input) {
+      const box = input.closest(".upload-box");
+      if (!box) return;
+      const f = input.files[0];
+      const note = box.querySelector(".upload-note");
+      if (f) {
+        box.classList.add("has-file");
+        if (note) note.innerHTML = `<i class="bi bi-check-circle-fill"></i> ✅ ${f.name} — tap to change`;
+      } else {
+        box.classList.remove("has-file");
+      }
+    }
     function checkUploadReady() {
       $("btnUpload").disabled = !($("receiptFile").files[0] && $("qrFile").files[0]);
     }
-    $("receiptFile").addEventListener("change", checkUploadReady);
-    $("qrFile").addEventListener("change", checkUploadReady);
+    $("receiptFile").addEventListener("change", (e) => { markChosen(e.target); checkUploadReady(); });
+    $("qrFile").addEventListener("change", (e) => { markChosen(e.target); checkUploadReady(); });
 
     $("btnUpload").addEventListener("click", async () => {
       const receiptF = $("receiptFile").files[0];
