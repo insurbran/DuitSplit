@@ -10,518 +10,1477 @@
     integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
     crossorigin="anonymous"
   />
+
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+    rel="stylesheet">
+
   <style>
-    body { background: #f6f8fb; }
-    .step-card { display: none; }
-    .step-card.active { display: block; }
-    .confidence-badge { font-size: .72rem; }
-    .friend-chip { cursor: pointer; user-select: none; }
-    .item-row.assignable { cursor: pointer; }
-    .avatar {
-      width: 28px; height: 28px; border-radius: 50%;
-      display: inline-flex; align-items: center; justify-content: center;
-      color: #fff; font-size: .75rem; font-weight: 600;
+  :root {
+    --primary: #2563eb;
+    --cyan: #06b6d4;
+    --green: #16a34a;
+    --yellow: #f59e0b;
+    --red: #dc2626;
+    --dark: #0f172a;
+    --muted: #64748b;
+    --border: #e2e8f0;
+    --card: rgba(255, 255, 255, 0.92);
+  }
+
+  body {
+    min-height: 100vh;
+    background:
+        radial-gradient(circle at top left, rgba(124,58,237,.22), transparent 35%),
+        radial-gradient(circle at bottom right, rgba(59,130,246,.18), transparent 35%),
+        linear-gradient(135deg,#0f172a,#111827,#1e1b4b);
+    color:#f8fafc;
+    font-family:Inter,system-ui,sans-serif;
+  }
+
+  .navbar{
+      background:rgba(15,23,42,.75)!important;
+      backdrop-filter:blur(20px);
+      border-bottom:1px solid rgba(255,255,255,.08);
+  }
+
+  .hero{
+      margin-top:35px;
+      padding:42px;
+      border-radius:34px;
+      background:rgba(30,41,59,.75);
+      border:1px solid rgba(255,255,255,.08);
+      backdrop-filter:blur(22px);
+      box-shadow:0 30px 70px rgba(0,0,0,.35);
+  }
+
+  .hero-tag {
+    display: inline-block;
+    padding: 9px 16px;
+    border-radius: 999px;
+    background: #dbeafe;
+    color: var(--primary);
+    font-weight: 800;
+    font-size: .85rem;
+  }
+
+  .hero-title {
+    font-size: clamp(2.3rem, 5vw, 4.4rem);
+    font-weight: 950;
+    letter-spacing: -2px;
+    line-height: .95;
+  }
+
+  .hero-desc {
+    color: var(--muted);
+    font-size: 1.08rem;
+    max-width: 600px;
+  }
+
+  .feature-box{
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.08);
+      color:white;
+  }
+
+  .feature-box i {
+    color: var(--primary);
+    margin-right: 7px;
+  }
+
+  .hero-phone {
+    width: 245px;
+    height: 330px;
+    margin: auto;
+    border-radius: 42px;
+    background: linear-gradient(135deg, #2563eb, #7c3aed);
+    padding: 16px;
+    box-shadow: 0 30px 70px rgba(37,99,235,.35);
+    transform: rotate(4deg);
+  }
+
+  .phone-card {
+    height: 100%;
+    border-radius: 32px;
+    background: rgba(255,255,255,.18);
+    border: 1px solid rgba(255,255,255,.25);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .phone-card i {
+    font-size: 4rem;
+  }
+
+  .progress-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .progress-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: #94a3b8;
+    font-weight: 800;
+  }
+
+  .circle{
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.08);
+      color:white;
+  }
+
+  .progress-item.active .circle {
+    background: linear-gradient(135deg, var(--primary), var(--cyan));
+    color: white;
+    border: none;
+  }
+
+  .progress-item.done .circle {
+    background: linear-gradient(135deg, var(--green), #22c55e);
+    color: white;
+    border: none;
+  }
+
+  .progress-item.active {
+    color: var(--primary);
+  }
+
+  .progress-item.done {
+    color: var(--green);
+  }
+
+  .line {
+    width: 75px;
+    height: 3px;
+    background: var(--border);
+    margin: 0 12px 28px;
+  }
+
+  .step-card {
+    display: none;
+  }
+
+  .step-card.active {
+    display: block;
+    animation: fadeUp .35s ease;
+  }
+
+  .app-card{
+      background:rgba(30,41,59,.82);
+      border:1px solid rgba(255,255,255,.08);
+      backdrop-filter:blur(20px);
+      border-radius:28px;
+      box-shadow:0 25px 60px rgba(0,0,0,.35);
+  }
+
+  .card-body {
+    padding: 34px;
+  }
+
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 18px;
+    align-items: flex-start;
+  }
+
+  .card-title {
+    font-weight: 900;
+    letter-spacing: -.5px;
+  }
+
+  .section-badge {
+    padding: 9px 15px;
+    border-radius: 999px;
+    background: #eff6ff;
+    color: var(--primary);
+    font-weight: 800;
+    white-space: nowrap;
+    font-size: .82rem;
+  }
+
+  .upload-box{
+      min-height:250px;
+      background:rgba(255,255,255,.04);
+      border:2px dashed #7c3aed;
+      color:white;
+  }
+
+  .upload-box:hover {
+    transform: translateY(-5px);
+    border-color: var(--primary);
+    box-shadow: 0 22px 45px rgba(37,99,235,.16);
+  }
+
+  .qr-upload {
+    background: linear-gradient(135deg, #ffffff, #ecfeff);
+    border-color: #a5f3fc;
+  }
+
+  .upload-icon {
+    width: 76px;
+    height: 76px;
+    border-radius: 24px;
+    margin: 0 auto 18px;
+    background: linear-gradient(135deg, var(--primary), var(--cyan));
+    color: white;
+    font-size: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .upload-box h5 {
+    font-weight: 900;
+  }
+
+  .upload-box p {
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+
+  .upload-mini {
+    font-size: .78rem;
+    font-weight: 800;
+    color: var(--primary);
+  }
+
+  .ai-status-card,
+  .friend-add-card,
+  .friend-section,
+  .assignment-card,
+  .summary-box,
+  .payment-card {
+    border-radius: 24px;
+    background: white;
+    border: 1px solid var(--border);
+    padding: 22px;
+    box-shadow: 0 14px 34px rgba(15,23,42,.07);
+  }
+
+  .ai-orb {
+    width: 54px;
+    height: 54px;
+    border-radius: 18px;
+    background: linear-gradient(135deg, #7c3aed, var(--primary));
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.35rem;
+  }
+
+  .form-control {
+    border-radius: 16px;
+    border: 1px solid #dbe3ef;
+    padding: 13px 15px;
+  }
+
+  .form-control:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px rgba(37,99,235,.13);
+  }
+
+  .btn {
+    border-radius: 16px;
+    font-weight: 850;
+    padding: 12px 20px;
+  }
+
+  .btn-primary{
+      background:linear-gradient(135deg,#7c3aed,#3b82f6);
+      border:none;
+      box-shadow:0 12px 30px rgba(124,58,237,.45);
+  }
+
+  .btn-primary:hover,
+  .btn-success:hover {
+    transform: translateY(-2px);
+  }
+
+  .btn-success{
+      background:linear-gradient(135deg,#22c55e,#16a34a);
+      border:none;
+  }
+
+  .modern-table {
+    border-collapse: separate;
+    border-spacing: 0 12px;
+  }
+
+  .modern-table thead th {
+    border: none;
+    color: #475569;
+    text-transform: uppercase;
+    font-size: .76rem;
+    letter-spacing: .06em;
+  }
+
+  .modern-table tbody tr {
+    background: white;
+    border-radius: 18px;
+    box-shadow: 0 10px 28px rgba(15,23,42,.06);
+  }
+
+  .modern-table tbody td {
+    border: none;
+    padding: 16px;
+    vertical-align: middle;
+  }
+
+  .modern-table tbody tr td:first-child {
+    border-radius: 18px 0 0 18px;
+  }
+
+  .modern-table tbody tr td:last-child {
+    border-radius: 0 18px 18px 0;
+  }
+
+  .item-row.assignable {
+    cursor: pointer;
+    transition: .2s;
+  }
+
+  .item-row.assignable:hover {
+    transform: scale(1.01);
+  }
+
+  .bill-preview {
+    min-height: 100%;
+    border-radius: 20px;
+    background: linear-gradient(135deg, #eff6ff, #ecfeff);
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .bill-preview small,
+  .summary-stat small,
+  .summary-banner small {
+    color: var(--muted);
+    font-weight: 800;
+    text-transform: uppercase;
+    font-size: .72rem;
+    letter-spacing: .05em;
+  }
+
+  .friend-chip {
+    cursor: pointer;
+    user-select: none;
+    border-radius: 999px !important;
+    padding: 10px 16px !important;
+    font-weight: 800;
+    box-shadow: 0 10px 25px rgba(15,23,42,.08);
+  }
+
+  .avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: .75rem;
+    font-weight: 900;
+    box-shadow: 0 8px 20px rgba(15,23,42,.18);
+  }
+
+  .confidence-badge {
+    font-size: .75rem;
+    border-radius: 999px;
+    padding: 8px 12px;
+  }
+
+  .low-conf input {
+    border-color: var(--yellow);
+    background: #fffbeb;
+  }
+
+  .summary-banner{
+      background:linear-gradient(135deg,#7c3aed,#2563eb);
+      color:white;
+  }
+
+  .friend-card {
+    border: 1px solid var(--border);
+    border-left: 8px solid #ccc;
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 16px 38px rgba(15,23,42,.08);
+  }
+
+  .friend-card .card-body {
+    padding: 24px;
+  }
+
+  .dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+
+  .qr-img {
+    width: 350px;
+    height: 350px;
+    max-width: 90vw;
+    object-fit: contain;
+    border-radius: 28px;
+    background: white;
+    padding: 14px;
+    border: 1px solid var(--border);
+    box-shadow: 0 24px 55px rgba(15,23,42,.14);
+  }
+
+  .overall-summary {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+  }
+
+  .summary-stat{
+      background:rgba(255,255,255,.05);
+      border:1px solid rgba(255,255,255,.08);
+      color:white;
+  }
+
+  .summary-stat h3 {
+    margin: 8px 0 0;
+    font-weight: 950;
+  }
+
+  .summary-stat.success h3 {
+    color: var(--green);
+  }
+
+  .summary-stat.danger h3 {
+    color: var(--red);
+  }
+
+  .alert {
+    border-radius: 20px;
+  }
+
+  @keyframes fadeUp {
+    from {
+      opacity: 0;
+      transform: translateY(18px);
     }
-    .dot { width: 14px; height: 14px; border-radius: 50%; display: inline-block; }
-    .navbar-brand b { color: #0d6efd; }
-    .qr-img { width: 500px; height: 500px; max-width: 90vw; object-fit: contain; border: 1px solid #eee; border-radius: 10px; background:#fff; padding: 6px; }
-    .edit-input { max-width: 120px; }
-    .low-conf input { border-color: #ffc107; background: #fff9e6; }
-    .friend-card { border-left: 5px solid #ccc; }
-  </style>
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @media (max-width: 768px) {
+    .hero {
+      padding: 28px;
+    }
+
+    .hero-phone {
+      margin-top: 30px;
+      width: 210px;
+      height: 280px;
+    }
+
+    .progress-container {
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .line {
+      display: none;
+    }
+
+    .section-header {
+      flex-direction: column;
+    }
+
+    .overall-summary {
+      grid-template-columns: 1fr;
+    }
+
+    .card-body {
+      padding: 24px;
+    }
+  }
+
+.card-title,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6{
+    color:white;
+}
+
+.text-muted{
+    color:#cbd5e1!important;
+}
+
+.form-control{
+    background:#1e293b;
+    color:white;
+    border:1px solid #334155;
+}
+
+.form-control::placeholder{
+    color:#94a3b8;
+}
+
+.form-control:focus{
+    background:#1e293b;
+    color:white;
+    border-color:#7c3aed;
+}
+
+.table{
+    color:white;
+}
+
+.table th{
+    color:#cbd5e1;
+}
+
+.table td{
+    background:rgba(255,255,255,.04);
+}
+
+.section-badge{
+    background:#312e81;
+    color:#c4b5fd;
+}
+
+.hero-title span{
+    color:#a78bfa!important;
+}
+
+/* DARK THEME FIXES */
+.navbar-brand {
+  color: white !important;
+}
+
+.bg-white {
+  background: rgba(15, 23, 42, 0.85) !important;
+}
+
+.upload-box {
+  width: 100%;
+  min-height: 260px;
+  align-items: center;
+  color: white !important;
+  overflow: hidden;
+}
+
+.upload-box h5,
+.upload-box p,
+.upload-mini {
+  position: relative;
+  z-index: 2;
+  color: white !important;
+  text-align: center;
+}
+
+.upload-box p {
+  color: #cbd5e1 !important;
+  max-width: 320px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.upload-mini {
+  color: #93c5fd !important;
+}
+
+.qr-upload {
+  background: rgba(255,255,255,.04) !important;
+  border-color: #38bdf8 !important;
+}
+
+.ai-status-card {
+  background: rgba(255,255,255,.06) !important;
+  color: white !important;
+}
+
+.ai-status-card h6,
+.ai-status-card p {
+  color: white !important;
+}
+
+.modern-table tbody tr {
+  background: rgba(255,255,255,.04) !important;
+}
+
+.modern-table tbody td {
+  background: rgba(255,255,255,.04) !important;
+  color: white !important;
+}
+
+.modern-table thead th {
+  color: #cbd5e1 !important;
+}
+
+.friend-add-card,
+.friend-section,
+.assignment-card,
+.summary-box,
+.payment-card {
+  background: rgba(255,255,255,.06) !important;
+  color: white !important;
+}
+
+.bill-preview {
+  background: rgba(255,255,255,.06) !important;
+  color: white !important;
+}
+
+.alert-primary {
+  background: rgba(59,130,246,.15) !important;
+  color: white !important;
+}
+
+.alert-primary .text-muted {
+  color: #cbd5e1 !important;
+}
+
+.upload-box .upload-icon {
+  flex-shrink: 0;
+}
+
+#btnUpload:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.progress-item small {
+  color: #cbd5e1;
+}
+
+.progress-item.active small {
+  color: #3b82f6;
+}
+
+.feature-box {
+  padding: 10px 14px;
+  border-radius: 10px;
+}
+</style>
 </head>
 <body>
-  <nav class="navbar navbar-light bg-white border-bottom mb-4">
-    <div class="container">
-      <span class="navbar-brand mb-0 h1">💸 <b>Duit</b>Split</span>
-      <span class="text-muted small">Receipt Bill Splitter</span>
-    </div>
-  </nav>
 
-  <div class="container pb-5" style="max-width: 920px;">
+<nav class="navbar navbar-expand-lg navbar-light shadow-sm sticky-top bg-white">
+    <div class="container">
+
+        <a class="navbar-brand fw-bold fs-3" href="#">
+            💸 <span class="text-primary">Duit</span>Split
+        </a>
+
+        <div class="d-flex align-items-center gap-2">
+
+            <span class="badge rounded-pill bg-primary-subtle text-primary px-3 py-2">
+
+                <i class="bi bi-stars"></i>
+
+                AI Powered
+
+            </span>
+
+        </div>
+
+    </div>
+</nav>
+
+<div class="container pb-5" style="max-width:1100px;">
+
     <div id="alertBox"></div>
 
-    <!-- STEP 1: Upload receipt + QR -->
-    <div class="card step-card active shadow-sm" id="step-upload">
-      <div class="card-body">
-        <h5 class="card-title">1 · Upload</h5>
-        <p class="text-muted">Upload your receipt and your DuitNow / TNG QR code. Both are required.</p>
-        <div class="row g-3">
-          <div class="col-12 col-md-6">
-            <label class="form-label">📄 Receipt photo</label>
-            <input type="file" class="form-control" id="receiptFile" accept="image/*" />
-          </div>
-          <div class="col-12 col-md-6">
-            <label class="form-label">💳 Your QR code</label>
-            <input type="file" class="form-control" id="qrFile" accept="image/*" />
-          </div>
+    <!-- HERO -->
+
+    <section class="hero mb-5">
+
+        <div class="row align-items-center">
+
+            <div class="col-lg-7">
+
+                <span class="hero-tag">
+
+                    AI Receipt Bill Splitter
+
+                </span>
+
+                <h1 class="hero-title mt-3">
+
+                    Split Bills
+                    <span class="text-primary">
+
+                        Smarter.
+
+                    </span>
+
+                </h1>
+
+                <p class="hero-desc mt-4">
+
+                    Upload your receipt,
+                    let AI detect every item,
+                    assign each friend,
+                    calculate tax automatically
+                    and complete payment using
+                    DuitNow QR.
+
+                </p>
+
+                <div class="row mt-4 g-3">
+
+                    <div class="col-auto">
+
+                        <div class="feature-box">
+
+                            <i class="bi bi-receipt"></i>
+
+                            AI OCR
+
+                        </div>
+
+                    </div>
+
+                    <div class="col-auto">
+
+                        <div class="feature-box">
+
+                            <i class="bi bi-people-fill"></i>
+
+                            Friend Split
+
+                        </div>
+
+                    </div>
+
+                    <div class="col-auto">
+
+                        <div class="feature-box">
+
+                            <i class="bi bi-qr-code"></i>
+
+                            QR Payment
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="col-lg-5 text-center">
+
+                <div class="hero-phone">
+
+                    <div class="phone-card">
+
+                        <i class="bi bi-phone-fill"></i>
+
+                        <h5 class="mt-3">
+
+                            Fast
+
+                        </h5>
+
+                        <p>
+
+                            AI Powered
+                            Receipt Splitting
+
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
         </div>
-        <button class="btn btn-primary mt-3" id="btnUpload" disabled>
-          <span class="spinner-border spinner-border-sm d-none" id="upSpin"></span>
-          Extract items
-        </button>
-      </div>
+
+    </section>
+
+    <!-- PROGRESS -->
+
+    <div class="progress-container mb-5">
+
+        <div class="progress-item active" id="pill-upload">
+
+            <div class="circle">
+
+                <i class="bi bi-upload"></i>
+
+            </div>
+
+            <small>
+
+                Upload
+
+            </small>
+
+        </div>
+
+        <div class="line"></div>
+
+        <div class="progress-item" id="pill-items">
+
+            <div class="circle">
+
+                <i class="bi bi-pencil-square"></i>
+
+            </div>
+
+            <small>
+
+                Review
+
+            </small>
+
+        </div>
+
+        <div class="line"></div>
+
+        <div class="progress-item" id="pill-assign">
+
+            <div class="circle">
+
+                <i class="bi bi-people-fill"></i>
+
+            </div>
+
+            <small>
+
+                Assign
+
+            </small>
+
+        </div>
+
+        <div class="line"></div>
+
+        <div class="progress-item" id="pill-summary">
+
+            <div class="circle">
+
+                <i class="bi bi-wallet2"></i>
+
+            </div>
+
+            <small>
+
+                Summary
+
+            </small>
+
+        </div>
+
     </div>
+
+<!-- STEP 1: Upload receipt + QR -->
+<div class="card step-card active app-card" id="step-upload">
+    <div class="card-body">
+
+        <div class="section-header mb-4">
+            <div>
+                <h4 class="card-title mb-1">
+                    <i class="bi bi-cloud-arrow-up-fill text-primary me-2"></i>
+                    Upload Receipt
+                </h4>
+                <p class="text-muted mb-0">
+                    Upload your receipt and payment QR code to start splitting.
+                </p>
+            </div>
+
+            <span class="section-badge">
+                Step 1 of 4
+            </span>
+        </div>
+
+        <div class="row g-4">
+
+            <div class="col-12 col-md-6">
+                <label class="upload-box">
+                    <input type="file" class="form-control d-none" id="receiptFile" accept="image/*" />
+
+                    <div class="upload-icon">
+                        <i class="bi bi-receipt-cutoff"></i>
+                    </div>
+
+                    <h5>Receipt Photo</h5>
+
+                    <p>
+                        Click here to upload your restaurant receipt.
+                    </p>
+
+                    <span class="upload-mini">
+                        JPG, PNG, HEIC supported
+                    </span>
+                </label>
+            </div>
+
+            <div class="col-12 col-md-6">
+                <label class="upload-box qr-upload">
+                    <input type="file" class="form-control d-none" id="qrFile" accept="image/*" />
+
+                    <div class="upload-icon">
+                        <i class="bi bi-qr-code-scan"></i>
+                    </div>
+
+                    <h5>Payment QR Code</h5>
+
+                    <p>
+                        Upload your DuitNow / TNG QR for payment collection.
+                    </p>
+
+                    <span class="upload-mini">
+                        Used in final payment summary
+                    </span>
+                </label>
+            </div>
+
+        </div>
+
+        <div class="ai-status-card mt-4">
+
+            <div class="d-flex align-items-center gap-3">
+
+                <div class="ai-orb">
+                    <i class="bi bi-stars"></i>
+                </div>
+
+                <div>
+                    <h6 class="mb-1">
+                        AI Receipt Extraction
+                    </h6>
+
+                    <p class="mb-0 text-muted small">
+                        Gemini will read the receipt, detect items, prices, quantity and tax.
+                    </p>
+                </div>
+
+            </div>
+
+        </div>
+
+        <button class="btn btn-primary btn-lg mt-4 w-100" id="btnUpload" disabled>
+            <span class="spinner-border spinner-border-sm d-none me-2" id="upSpin"></span>
+            Extract Items with AI
+            <i class="bi bi-arrow-right ms-2"></i>
+        </button>
+
+    </div>
+</div>
 
     <!-- STEP 2: Review + edit items -->
-    <div class="card step-card shadow-sm" id="step-items">
-      <div class="card-body">
-        <h5 class="card-title">2 · Review &amp; edit items</h5>
-        <div id="timingBox" class="small text-muted mb-2"></div>
-        <p class="text-muted">Fix any wrong names or prices. Low-confidence rows (yellow) are highlighted.</p>
+<div class="card step-card app-card" id="step-items">
+
+    <div class="card-body">
+
+        <div class="section-header mb-4">
+
+            <div>
+
+                <h4 class="card-title mb-1">
+
+                    <i class="bi bi-pencil-square text-primary me-2"></i>
+
+                    Review Receipt
+
+                </h4>
+
+                <p class="text-muted mb-0">
+
+                    AI has extracted the receipt. Verify item names and prices before continuing.
+
+                </p>
+
+            </div>
+
+            <span class="section-badge">
+
+                Step 2 of 4
+
+            </span>
+
+        </div>
+
+        <div class="alert alert-primary border-0 shadow-sm">
+
+            <div class="d-flex align-items-center">
+
+                <i class="bi bi-stars fs-3 me-3"></i>
+
+                <div>
+
+                    <strong>AI Detection Complete</strong>
+
+                    <div class="small text-muted" id="timingBox"></div>
+
+                </div>
+
+            </div>
+
+        </div>
+
         <div class="table-responsive">
-          <table class="table align-middle">
-            <thead>
-              <tr><th>Item</th><th class="text-end" style="width:90px">Qty</th><th class="text-end" style="width:140px">Price</th><th class="text-center" style="width:110px">Confidence</th></tr>
-            </thead>
-            <tbody id="itemsBody"></tbody>
-          </table>
+
+            <table class="table modern-table align-middle">
+
+                <thead>
+
+                    <tr>
+
+                        <th>Item</th>
+
+                        <th class="text-center">Qty</th>
+
+                        <th class="text-end">Price (RM)</th>
+
+                        <th class="text-center">AI Confidence</th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody id="itemsBody"></tbody>
+
+            </table>
+
         </div>
-        <div class="row g-2 align-items-center border-top pt-3">
-          <div class="col-auto"><label class="form-label mb-0">Tax rate (%)</label></div>
-          <div class="col-auto">
-            <input type="number" step="0.01" class="form-control edit-input" id="taxInput" />
-          </div>
-          <div class="col-auto"><span id="taxBadge"></span></div>
-          <div class="col text-end text-muted">
-            Subtotal: <b id="sumSubtotal">0.00</b> · Total: <b id="sumTotal">0.00</b>
-          </div>
+
+        <div class="summary-box mt-4">
+
+            <div class="row">
+
+                <div class="col-md-3">
+
+                    <label class="fw-bold mb-2">
+
+                        Tax (%)
+
+                    </label>
+
+                    <input
+                        type="number"
+                        step="0.01"
+                        class="form-control"
+                        id="taxInput">
+
+                </div>
+
+                <div class="col-md-9">
+
+                    <div class="bill-preview">
+
+                        <div>
+
+                            <small>Subtotal</small>
+
+                            <h5 id="sumSubtotal">
+
+                                RM0.00
+
+                            </h5>
+
+                        </div>
+
+                        <div>
+
+                            <small>Total</small>
+
+                            <h3 class="text-primary fw-bold">
+
+                                RM<span id="sumTotal">0.00</span>
+
+                            </h3>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
         </div>
-        <hr />
+
+        <hr class="my-4">
+
         <div class="row g-3">
-          <div class="col-12 col-md-6">
-            <label class="form-label">Session name</label>
-            <input type="text" class="form-control" id="sessionName" placeholder="Dinner at Mamak" />
-          </div>
-          <div class="col-12 col-md-6">
-            <label class="form-label">Your name (paid the bill)</label>
-            <input type="text" class="form-control" id="paidBy" placeholder="Brandon" />
-          </div>
+
+            <div class="col-md-6">
+
+                <label class="form-label">
+
+                    <i class="bi bi-tag me-2"></i>
+
+                    Session Name
+
+                </label>
+
+                <input
+                    type="text"
+                    class="form-control"
+                    id="sessionName"
+                    placeholder="Dinner at Mamak">
+
+            </div>
+
+            <div class="col-md-6">
+
+                <label class="form-label">
+
+                    <i class="bi bi-person-fill me-2"></i>
+
+                    Paid By
+
+                </label>
+
+                <input
+                    type="text"
+                    class="form-control"
+                    id="paidBy"
+                    placeholder="Your Name">
+
+            </div>
+
         </div>
-        <button class="btn btn-primary mt-3" id="btnConfirm">Confirm and continue →</button>
-      </div>
+
+        <button class="btn btn-primary btn-lg w-100 mt-4" id="btnConfirm">
+
+            Continue to Assign Friends
+
+            <i class="bi bi-arrow-right ms-2"></i>
+
+        </button>
+
     </div>
 
-    <!-- STEP 3: Friends + assignment -->
-    <div class="card step-card shadow-sm" id="step-assign">
-      <div class="card-body">
-        <h5 class="card-title">3 · Add friends &amp; assign items</h5>
-        <div class="row g-2 mb-3">
-          <div class="col"><input type="text" class="form-control" id="friendName" placeholder="Add a friend's name" /></div>
-          <div class="col-auto"><button class="btn btn-outline-primary" id="btnAddFriend">+ Add</button></div>
+</div>
+
+<!-- STEP 3: Friends + assignment -->
+<div class="card step-card app-card" id="step-assign">
+
+    <div class="card-body">
+
+        <div class="section-header mb-4">
+
+            <div>
+
+                <h4 class="card-title">
+
+                    <i class="bi bi-people-fill text-success me-2"></i>
+
+                    Assign Friends
+
+                </h4>
+
+                <p class="text-muted">
+
+                    Add everyone involved and assign each food item to the correct person.
+
+                </p>
+
+            </div>
+
+            <span class="section-badge">
+
+                Step 3 of 4
+
+            </span>
+
         </div>
-        <div class="mb-3">
-          <div class="text-muted small mb-1">Pick the active friend, then tap items to assign (tap again to unassign):</div>
-          <div id="friendChips" class="d-flex flex-wrap gap-2"></div>
+
+        <div class="friend-add-card mb-4">
+
+            <div class="row g-3">
+
+                <div class="col">
+
+                    <input
+                        type="text"
+                        class="form-control form-control-lg"
+                        id="friendName"
+                        placeholder="Enter friend's name">
+
+                </div>
+
+                <div class="col-auto">
+
+                    <button
+                        class="btn btn-success btn-lg"
+                        id="btnAddFriend">
+
+                        <i class="bi bi-person-plus-fill me-2"></i>
+
+                        Add Friend
+
+                    </button>
+
+                </div>
+
+            </div>
+
         </div>
-        <div class="table-responsive">
-          <table class="table align-middle">
-            <thead><tr><th>Item</th><th class="text-end">Price</th><th>Shared by</th></tr></thead>
-            <tbody id="assignBody"></tbody>
-          </table>
+
+        <div class="friend-section mb-4">
+
+            <div class="d-flex justify-content-between align-items-center mb-3">
+
+                <h6 class="fw-bold">
+
+                    Select Active Friend
+
+                </h6>
+
+                <small class="text-muted">
+
+                    Click a friend before assigning items.
+
+                </small>
+
+            </div>
+
+            <div
+                id="friendChips"
+                class="d-flex flex-wrap gap-3">
+
+            </div>
+
         </div>
-        <button class="btn btn-primary" id="btnSummary">View bill summary →</button>
-      </div>
+
+        <div class="assignment-card">
+
+            <div class="d-flex justify-content-between align-items-center mb-3">
+
+                <h6 class="fw-bold">
+
+                    Receipt Items
+
+                </h6>
+
+                <span class="badge bg-primary">
+
+                    Tap to Assign
+
+                </span>
+
+            </div>
+
+            <div class="table-responsive">
+
+                <table class="table modern-table align-middle">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>Food Item</th>
+
+                            <th class="text-end">
+
+                                Price
+
+                            </th>
+
+                            <th>
+
+                                Assigned To
+
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody id="assignBody">
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+        <button
+            class="btn btn-primary btn-lg w-100 mt-4"
+            id="btnSummary">
+
+            Continue to Bill Summary
+
+            <i class="bi bi-arrow-right ms-2"></i>
+
+        </button>
+
     </div>
 
-    <!-- STEP 4: Summary + paid tracking -->
-    <div class="card step-card shadow-sm" id="step-summary">
-      <div class="card-body">
-        <h5 class="card-title">4 · Bill summary</h5>
-        <p class="text-muted">Paid by <b id="summaryPaidBy"></b>. Here's what everyone owes:</p>
+</div>
+
+<!-- STEP 4 -->
+<div class="card step-card app-card" id="step-summary">
+
+    <div class="card-body">
+
+        <div class="section-header mb-4">
+
+            <div>
+
+                <h4 class="card-title">
+
+                    <i class="bi bi-wallet2 text-warning me-2"></i>
+
+                    Payment Summary
+
+                </h4>
+
+                <p class="text-muted">
+
+                    Everyone's payment is calculated automatically.
+
+                </p>
+
+            </div>
+
+            <span class="section-badge">
+
+                Final Step
+
+            </span>
+
+        </div>
+
+        <div class="summary-banner mb-4">
+
+            <div>
+
+                <small>
+
+                    Bill Paid By
+
+                </small>
+
+                <h4 id="summaryPaidBy">
+
+                    -
+
+                </h4>
+
+            </div>
+
+            <div>
+
+                <i class="bi bi-credit-card-2-front-fill display-5 text-primary"></i>
+
+            </div>
+
+        </div>
+
         <div id="summaryFriends"></div>
-        <div id="qrSection" class="text-center my-4 d-none">
-          <img class="qr-img" id="summaryQr" src="" alt="Payment QR code" />
-          <div class="small mt-2">Open TNG → Scan this QR → pay your amount above</div>
+
+        <div
+            id="qrSection"
+            class="payment-card text-center my-5 d-none">
+
+            <h4 class="fw-bold">
+
+                Scan to Pay
+
+            </h4>
+
+            <p class="text-muted">
+
+                Scan this QR using DuitNow or TNG eWallet.
+
+            </p>
+
+            <img
+                class="qr-img"
+                id="summaryQr"
+                src=""
+                alt="QR">
+
         </div>
-        <div class="d-flex justify-content-between border-top pt-3 mt-3 fw-bold">
-          <span>Total: RM<span id="totTotal">0.00</span></span>
-          <span class="text-success">Paid: RM<span id="totPaid">0.00</span></span>
-          <span class="text-danger">Remaining: RM<span id="totRemaining">0.00</span></span>
+
+        <div class="overall-summary mt-4">
+
+            <div class="summary-stat">
+
+                <small>
+
+                    Total Bill
+
+                </small>
+
+                <h3>
+
+                    RM<span id="totTotal">0.00</span>
+
+                </h3>
+
+            </div>
+
+            <div class="summary-stat success">
+
+                <small>
+
+                    Paid
+
+                </small>
+
+                <h3>
+
+                    RM<span id="totPaid">0.00</span>
+
+                </h3>
+
+            </div>
+
+            <div class="summary-stat danger">
+
+                <small>
+
+                    Remaining
+
+                </small>
+
+                <h3>
+
+                    RM<span id="totRemaining">0.00</span>
+
+                </h3>
+
+            </div>
+
         </div>
-        <button class="btn btn-success mt-3 d-none" id="btnComplete">🎉 Complete Session</button>
-        <div id="completeMsg" class="alert alert-success mt-3 d-none"></div>
-      </div>
+
+        <button
+            class="btn btn-success btn-lg w-100 mt-4 d-none"
+            id="btnComplete">
+
+            🎉 Complete Session
+
+        </button>
+
+        <div
+            id="completeMsg"
+            class="alert alert-success mt-3 d-none">
+
+        </div>
+
     </div>
-  </div>
 
-  <script>window.INITIAL_SESSION_ID = "{{ session_id }}";</script>
-  <script
-    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-    integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
-    crossorigin="anonymous"></script>
-  <script>
-    const state = {
-      sessionId: null, receipt: null,
-      qrImagePath: "", silverPath: "",
-      friends: [], activeFriend: null, assignments: {}, summary: null,
-    };
-    const $ = (id) => document.getElementById(id);
-    const money = (n) => Number(n || 0).toFixed(2);
+</div>
 
-    function showStep(id) {
-      document.querySelectorAll(".step-card").forEach((c) => c.classList.remove("active"));
-      $(id).classList.add("active");
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
-    function alertMsg(msg, kind = "danger") {
-      $("alertBox").innerHTML =
-        `<div class="alert alert-${kind} alert-dismissible fade show" role="alert">` +
-        `${msg}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>`;
-    }
-    function escapeHtml(s) {
-      return String(s).replace(/[&<>"']/g, (c) =>
-        ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-    }
-    const initials = (n) => (n || "?").trim().slice(0, 2).toUpperCase() || "?";
-    function confBadge(c) {
-      const pct = Math.round((c || 0) * 100);
-      return c >= 0.7
-        ? `<span class="badge bg-success confidence-badge">🟢 ${pct}%</span>`
-        : `<span class="badge bg-warning text-dark confidence-badge">🟡 ${pct}%</span>`;
-    }
-
-    async function api(path, options = {}) {
-      const res = await fetch(`/api/${path}`, options);
-      const text = await res.text();
-      let data = null;
-      try { data = text ? JSON.parse(text) : null; } catch { data = text; }
-      if (!res.ok) {
-        const detail = (data && data.detail) || (data && data.error) || `Request failed (${res.status})`;
-        throw new Error(detail);
-      }
-      return data;
-    }
-
-    // ---- STEP 1: upload receipt + QR ----
-    function checkUploadReady() {
-      $("btnUpload").disabled = !($("receiptFile").files[0] && $("qrFile").files[0]);
-    }
-    $("receiptFile").addEventListener("change", checkUploadReady);
-    $("qrFile").addEventListener("change", checkUploadReady);
-
-    $("btnUpload").addEventListener("click", async () => {
-      const receiptF = $("receiptFile").files[0];
-      const qrF = $("qrFile").files[0];
-      if (!receiptF || !qrF) { alertMsg("Please choose both a receipt and a QR image."); return; }
-      const spin = $("upSpin");
-      spin.classList.remove("d-none");
-      $("btnUpload").disabled = true;
-      try {
-        const form = new FormData();
-        form.append("receipt", receiptF);
-        form.append("qr", qrF);
-        const res = await api("upload", { method: "POST", body: form });
-        if (!res.receipt.is_valid_receipt) {
-          alertMsg(`That doesn't look like a receipt: ${escapeHtml(res.receipt.validation_reason || "please try another photo.")}`, "warning");
-          return;
-        }
-        if (!res.receipt.items || res.receipt.items.length === 0) {
-          alertMsg("No items were extracted. The AI parse likely failed — check your Gemini API key/quota in the backend logs, then re-upload.", "warning");
-          return;
-        }
-        state.sessionId = res.session_id;
-        state.receipt = res.receipt;
-        state.qrImagePath = res.qr_image_path;
-        state.silverPath = res.silver_path;
-        const secs = (res.processing_ms / 1000).toFixed(1);
-        $("timingBox").innerHTML = `⚡ Extracted in ${secs}s` +
-          (res.receipt.cached ? " (from cache)" : "") +
-          (res.timeout_warning ? ` — <span class="text-danger">slow extraction, Gemini took over 15s</span>` : "");
-        renderEditableItems(res.receipt);
-        showStep("step-items");
-      } catch (e) {
-        alertMsg(`Upload failed: ${e.message}`);
-      } finally {
-        spin.classList.add("d-none");
-        $("btnUpload").disabled = false;
-      }
-    });
-
-    // ---- STEP 2: editable items ----
-    function renderEditableItems(receipt) {
-      const body = $("itemsBody");
-      body.innerHTML = "";
-      (receipt.items || []).forEach((it) => {
-        const low = it.confidence < 0.7;
-        const tr = document.createElement("tr");
-        if (low) tr.className = "low-conf";
-        tr.dataset.conf = it.confidence;
-        tr.dataset.id = it.id;
-        tr.innerHTML =
-          `<td><input class="form-control i-name" value="${escapeHtml(it.name)}" /></td>` +
-          `<td><input type="number" min="1" class="form-control i-qty text-end" value="${it.quantity}" /></td>` +
-          `<td><input type="number" step="0.01" class="form-control i-price text-end" value="${Number(it.price).toFixed(2)}" /></td>` +
-          `<td class="text-center">${confBadge(it.confidence)}</td>`;
-        body.appendChild(tr);
-      });
-      // Show the tax rate without trailing ".00" (keeps real decimals if any).
-      $("taxInput").value = String(Number(receipt.tax_percent || 0));
-      $("taxBadge").innerHTML = confBadge(receipt.tax_confidence);
-      body.querySelectorAll("input").forEach((i) => i.addEventListener("input", recalcTotals));
-      $("taxInput").addEventListener("input", recalcTotals);
-      recalcTotals();
-      // Auto-focus the first low-confidence item so Brandon notices it.
-      const firstLow = body.querySelector(".low-conf .i-price");
-      if (firstLow) { firstLow.focus(); firstLow.select(); }
-    }
-
-    function recalcTotals() {
-      let subtotal = 0;
-      document.querySelectorAll("#itemsBody tr").forEach((r) => {
-        subtotal += parseFloat(r.querySelector(".i-price").value) || 0;
-      });
-      const pct = parseFloat($("taxInput").value) || 0;
-      const tax = subtotal * pct / 100;
-      $("sumSubtotal").textContent = money(subtotal);
-      $("sumTotal").textContent = money(subtotal + tax);
-    }
-
-    function collectReceipt() {
-      const items = [...document.querySelectorAll("#itemsBody tr")].map((r) => ({
-        id: r.dataset.id,
-        name: r.querySelector(".i-name").value.trim() || "Item",
-        quantity: parseInt(r.querySelector(".i-qty").value) || 1,
-        price: parseFloat(r.querySelector(".i-price").value) || 0,
-        confidence: parseFloat(r.dataset.conf) || 0,
-      }));
-      const pct = parseFloat($("taxInput").value) || 0;
-      const subtotal = items.reduce((s, i) => s + i.price, 0);
-      const tax = subtotal * pct / 100;
-      return {
-        ...state.receipt,
-        items,
-        tax_percent: pct,
-        tax_amount: Number(tax.toFixed(2)),
-        subtotal,
-        total: subtotal + tax,
-      };
-    }
-
-    $("btnConfirm").addEventListener("click", async () => {
-      try {
-        state.receipt = collectReceipt();
-        await api("sessions", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            id: state.sessionId,
-            name: $("sessionName").value || "Untitled",
-            created_by: $("paidBy").value || "Me",
-            receipt: state.receipt,
-            qr_image_path: state.qrImagePath,
-            silver_path: state.silverPath,
-          }),
-        });
-        renderFriendChips();
-        renderAssignTable();
-        showStep("step-assign");
-      } catch (e) {
-        alertMsg(`Could not save session: ${e.message}`);
-      }
-    });
-
-    // ---- STEP 3: friends + assignment ----
-    $("btnAddFriend").addEventListener("click", async () => {
-      const name = $("friendName").value.trim();
-      if (!name) { alertMsg("Enter a friend's name."); return; }
-      try {
-        const friend = await api(`sessions/${state.sessionId}/friends`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name }),
-        });
-        state.friends.push(friend);
-        state.activeFriend = friend.id;
-        $("friendName").value = "";
-        renderFriendChips();
-        renderAssignTable();
-      } catch (e) {
-        alertMsg(`Could not add friend: ${e.message}`);
-      }
-    });
-    $("friendName").addEventListener("keydown", (e) => {
-      if (e.key === "Enter") { e.preventDefault(); $("btnAddFriend").click(); }
-    });
-
-    const friendById = (id) => state.friends.find((f) => f.id === id);
-
-    function clientShares() {
-      const priceOf = {}; assignableUnits().forEach((u) => (priceOf[u.unitId] = u.price));
-      const acc = {}; state.friends.forEach((f) => (acc[f.id] = { subtotal: 0 }));
-      for (const [unitId, set] of Object.entries(state.assignments)) {
-        const ids = [...set].filter((id) => acc[id]);
-        if (!ids.length || priceOf[unitId] == null) continue;
-        const share = priceOf[unitId] / ids.length;
-        ids.forEach((id) => (acc[id].subtotal += share));
-      }
-      const pct = Number(state.receipt.tax_percent) || 0;
-      const out = {};
-      state.friends.forEach((f) => {
-        const sub = acc[f.id].subtotal;
-        out[f.id] = sub + sub * pct / 100;
-      });
-      return out;
-    }
-
-    function renderFriendChips() {
-      const box = $("friendChips");
-      const totals = clientShares();
-      box.innerHTML = "";
-      if (!state.friends.length) {
-        box.innerHTML = `<span class="text-muted small">No friends yet — add some above.</span>`;
-        return;
-      }
-      state.friends.forEach((f) => {
-        const active = f.id === state.activeFriend;
-        box.insertAdjacentHTML("beforeend",
-          `<button class="btn btn-sm friend-chip ${active ? "btn-primary" : "btn-outline-secondary"}" data-fid="${f.id}">` +
-          `<span class="avatar me-1" style="background:${f.avatar_color}">${initials(f.name)}</span>` +
-          `${escapeHtml(f.name)} · RM${money(totals[f.id])}</button>`);
-      });
-      box.querySelectorAll("[data-fid]").forEach((btn) =>
-        btn.addEventListener("click", () => { state.activeFriend = btn.dataset.fid; renderFriendChips(); }));
-    }
-
-    // Expand each line item into individual units (qty 2 -> two units).
-    function assignableUnits() {
-      const units = [];
-      (state.receipt.items || []).forEach((it) => {
-        const q = it.quantity && it.quantity > 0 ? it.quantity : 1;
-        const unitPrice = it.price / q;
-        for (let n = 0; n < q; n++) {
-          const label = q > 1 ? `${it.name} (${n + 1} of ${q})` : it.name;
-          units.push({ unitId: `${it.id}#${n}`, label, price: unitPrice });
-        }
-      });
-      return units;
-    }
-
-    function renderAssignTable() {
-      const body = $("assignBody");
-      body.innerHTML = "";
-      assignableUnits().forEach((u) => {
-        const sharers = state.assignments[u.unitId] || new Set();
-        const chips = [...sharers].map((fid) => {
-          const f = friendById(fid);
-          return f ? `<span class="avatar me-1" title="${escapeHtml(f.name)}" style="background:${f.avatar_color}">${initials(f.name)}</span>` : "";
-        }).join("");
-        const row = document.createElement("tr");
-        row.className = "item-row assignable";
-        row.innerHTML = `<td>${escapeHtml(u.label)}</td><td class="text-end">${money(u.price)}</td>` +
-          `<td>${chips || '<span class="text-muted small">— tap to assign active friend —</span>'}</td>`;
-        row.addEventListener("click", () => toggleAssign(u.unitId));
-        body.appendChild(row);
-      });
-    }
-
-    function toggleAssign(itemId) {
-      if (!state.activeFriend) { alertMsg("Add and select a friend first.", "warning"); return; }
-      const set = state.assignments[itemId] || new Set();
-      set.has(state.activeFriend) ? set.delete(state.activeFriend) : set.add(state.activeFriend);
-      state.assignments[itemId] = set;
-      renderAssignTable();
-      renderFriendChips();
-    }
-
-    $("btnSummary").addEventListener("click", async () => {
-      try {
-        const payload = {};
-        for (const [item, set] of Object.entries(state.assignments)) if (set.size) payload[item] = [...set];
-        await api(`sessions/${state.sessionId}/assign`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ assignments: payload }),
-        });
-        const summary = await api(`sessions/${state.sessionId}/summary`);
-        state.summary = summary;
-        renderSummary(summary);
-        showStep("step-summary");
-      } catch (e) {
-        alertMsg(`Could not compute summary: ${e.message}`);
-      }
-    });
-
-    // ---- STEP 4: summary + paid tracking ----
-    function renderSummary(summary) {
-      $("summaryPaidBy").textContent = summary.paid_by || "—";
-      const box = $("summaryFriends");
-      box.innerHTML = "";
-      (summary.friends || []).forEach((f) => {
-        const itemsHtml = f.items.map((i) => `<div>${escapeHtml(i.name)}: RM${money(i.price)}</div>`).join("");
-        box.insertAdjacentHTML("beforeend",
-          `<div class="card friend-card mb-3" style="border-left-color:${f.avatar_color}">
-             <div class="card-body">
-               <div class="d-flex justify-content-between align-items-center mb-2">
-                 <span class="fw-bold"><span class="dot me-2" style="background:${f.avatar_color}"></span>${escapeHtml(f.name)}</span>
-                 <div class="form-check">
-                   <input class="form-check-input paid-check" type="checkbox" data-fid="${f.friend_id}" id="paid_${f.friend_id}" ${f.is_paid ? "checked disabled" : ""}>
-                   <label class="form-check-label" for="paid_${f.friend_id}">Mark as Paid</label>
-                 </div>
-               </div>
-               <div class="text-muted small mb-1">${itemsHtml}</div>
-               <div>Tax share: RM${money(f.tax_share)}</div>
-               <div class="fw-bold">Total: RM${money(f.total_owed)}</div>
-             </div>
-           </div>`);
-      });
-      // One shared QR at the bottom (it's the payer's single QR for everyone).
-      $("summaryQr").src = `/api/sessions/${summary.session_id}/qr`;
-      $("qrSection").classList.remove("d-none");
-      box.querySelectorAll(".paid-check").forEach((c) =>
-        c.addEventListener("change", () => markPaid(c.dataset.fid)));
-      updateTotals();
-    }
-
-    function updateTotals() {
-      const s = state.summary;
-      const paid = s.friends.filter((f) => f.is_paid).reduce((a, f) => a + f.total_owed, 0);
-      const total = s.total;
-      $("totTotal").textContent = money(total);
-      $("totPaid").textContent = money(paid);
-      $("totRemaining").textContent = money(total - paid);
-      const allPaid = s.friends.length > 0 && s.friends.every((f) => f.is_paid);
-      $("btnComplete").classList.toggle("d-none", !allPaid);
-    }
-
-    async function markPaid(fid) {
-      try {
-        await api(`sessions/${state.sessionId}/friends/${fid}/paid`, { method: "PATCH" });
-        const f = state.summary.friends.find((x) => x.friend_id === fid);
-        if (f) f.is_paid = true;
-        const cb = $(`paid_${fid}`);
-        if (cb) cb.disabled = true;
-        updateTotals();
-      } catch (e) {
-        alertMsg(`Could not mark paid: ${e.message}`);
-      }
-    }
-
-    $("btnComplete").addEventListener("click", () => {
-      $("btnComplete").classList.add("d-none");
-      const msg = $("completeMsg");
-      msg.textContent = "All paid! Session complete 🎉  Redirecting home…";
-      msg.classList.remove("d-none");
-      setTimeout(() => { window.location.href = "/"; }, 3000);
-    });
-
-    // ---- Multi-user: open a shared session and jump to summary ----
-    async function loadExistingSession(id) {
-      try {
-        const session = await api(`sessions/${id}`);
-        state.sessionId = id;
-        state.receipt = session.receipt;
-        state.friends = session.friends || [];
-        const summary = await api(`sessions/${id}/summary`);
-        state.summary = summary;
-        renderSummary(summary);
-        showStep("step-summary");
-      } catch (e) {
-        alertMsg(`Could not open that session: ${e.message}`);
-        showStep("step-upload");
-      }
-    }
-    if (window.INITIAL_SESSION_ID) loadExistingSession(window.INITIAL_SESSION_ID);
-  </script>
-</body>
-</html>
