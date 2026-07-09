@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>DuitSplit — Home</title>
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+    integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+    crossorigin="anonymous"
+  />
+  <style>
+    body { background: #f6f8fb; font-size: 16px; }
+    .navbar-brand b { color: #0d6efd; }
+    .btn { min-height: 44px; }              /* touch target */
+    .session-card { border: none; border-radius: 14px; box-shadow: 0 4px 14px rgba(0,0,0,.06); }
+    .progress { height: 8px; }
+    .remaining { color: #dc3545; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <nav class="navbar navbar-light bg-white border-bottom mb-4">
+    <div class="container">
+      <span class="navbar-brand mb-0 h1">💸 <b>Duit</b>Split</span>
+      <span class="text-muted small">Receipt Bill Splitter</span>
+    </div>
+  </nav>
+
+  <div class="container pb-5" style="max-width: 620px;">
+    <div id="alertBox"></div>
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h5 class="mb-0">Active sessions</h5>
+      <a href="/new" class="btn btn-primary">+ New Session</a>
+    </div>
+
+    <div id="sessionList">
+      <div class="text-center text-muted py-5">
+        <div class="spinner-border spinner-border-sm"></div> Loading…
+      </div>
+    </div>
+  </div>
+
+  <script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+    crossorigin="anonymous"></script>
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const money = (n) => Number(n || 0).toFixed(2);
+
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"']/g, (c) =>
+        ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+    }
+
+    // SQLite stores created_at as UTC "YYYY-MM-DD HH:MM:SS".
+    function timeAgo(ts) {
+      if (!ts) return "";
+      const d = new Date(ts.replace(" ", "T") + "Z");
+      const secs = Math.floor((Date.now() - d.getTime()) / 1000);
+      if (secs < 60) return "just now";
+      if (secs < 3600) return `${Math.floor(secs / 60)} min ago`;
+      if (secs < 86400) return `${Math.floor(secs / 3600)} hours ago`;
+      if (secs < 172800) return "yesterday";
+      return `${Math.floor(secs / 86400)} days ago`;
+    }
+
+    async function loadSessions() {
+      try {
+        const res = await fetch("/api/sessions");
+        if (!res.ok) throw new Error(`Failed (${res.status})`);
+        const sessions = await res.json();
+        render(sessions);
+      } catch (e) {
+        $("sessionList").innerHTML =
+          `<div class="alert alert-danger">Could not load sessions: ${escapeHtml(e.message)}</div>`;
+      }
+    }
+
+    function render(sessions) {
+      const box = $("sessionList");
+      if (!sessions.length) {
+        box.innerHTML =
+          `<div class="text-center text-muted py-5">
+             No active sessions yet.<br>Tap <b>+ New Session</b> to split a receipt.
+           </div>`;
+        return;
+      }
+      box.innerHTML = "";
+      sessions.forEach((s) => {
+        const pct = s.total_amount > 0 ? Math.round((s.paid_amount / s.total_amount) * 100) : 0;
+        box.insertAdjacentHTML("beforeend",
+          `<div class="card session-card mb-3">
+             <div class="card-body">
+               <div class="fw-bold mb-1">🍽️ ${escapeHtml(s.name || "Untitled")}</div>
+               <div class="text-muted small mb-2">
+                 ${s.friends_paid}/${s.friends_total} paid ·
+                 <span class="remaining">RM${money(s.remaining_amount)} remaining</span>
+               </div>
+               <div class="progress mb-2"><div class="progress-bar bg-success" style="width:${pct}%"></div></div>
+               <div class="d-flex justify-content-between align-items-center">
+                 <span class="text-muted small">Created ${timeAgo(s.created_at)}</span>
+                 <a href="/session/${s.id}" class="btn btn-sm btn-outline-primary">Resume Session →</a>
+               </div>
+             </div>
+           </div>`);
+      });
+    }
+
+    loadSessions();
+  </script>
+</body>
+</html>

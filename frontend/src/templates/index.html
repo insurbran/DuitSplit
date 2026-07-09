@@ -673,6 +673,70 @@ h6{
   padding: 10px 14px;
   border-radius: 10px;
 }
+
+/* Mobile touch targets */
+.btn { min-height: 44px; }
+.form-check-input { width: 1.4em; height: 1.4em; margin-top: .15em; }
+.form-check-label { padding-left: .25rem; }
+.item-row.assignable td { padding-top: 18px; padding-bottom: 18px; }
+@media (max-width: 576px) {
+  .card-body { padding: 20px; }
+  .friend-chip { font-size: .95rem; }
+  .hero { padding: 22px; }
+}
+
+/* ---------- UI/UX fixes ---------- */
+/* Fix 1: centre the helper text (span is inline by default) */
+.upload-mini { display: block; width: 100%; text-align: center; }
+.upload-box p { text-align: center; }
+
+/* Fix 2: clear "uploaded" state */
+.upload-box { transition: all .2s ease; }
+.upload-box.uploaded {
+  border: 2px solid #22c55e !important;
+  background: rgba(34,197,94,.12) !important;
+}
+.upload-box.uploaded .upload-icon {
+  background: linear-gradient(135deg,#22c55e,#16a34a) !important;
+}
+
+/* Fix 3: progress steps + connecting lines */
+.line { transition: all .3s ease; }
+.line.done { background: #22c55e; }
+.progress-item small { font-weight: 800; }
+.progress-item.active small { color: #c4b5fd; }
+.progress-item.done small { color: #22c55e; }
+.progress-item.done .circle { background: linear-gradient(135deg,#22c55e,#16a34a); }
+
+/* Fix 4: "Bill Paid By" banner */
+.summary-banner {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 22px 26px; border-radius: 16px;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.16);
+}
+.summary-banner small { color: rgba(255,255,255,.82) !important; letter-spacing: .08em; }
+#summaryPaidBy { color: #fff; font-weight: 900; margin: 4px 0 0; }
+
+/* Fix 5: friend summary cards */
+.friend-card { border-radius: 16px; transition: all .2s ease; }
+.friend-name { color: #fff; font-weight: 800; font-size: 1.15rem; }
+.friend-total { color: #a78bfa; font-weight: 900; font-size: 1.15rem; }
+.friend-card .form-check-label { color: #fff; }
+.friend-card.paid { border-left-color: #22c55e !important; }
+.friend-card.paid .friend-name { text-decoration: line-through; opacity: .6; }
+
+/* Fix 7: slim sticky nav */
+.slim-nav {
+  background: rgba(15,23,42,.85); backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255,255,255,.08);
+}
+.slim-nav .navbar-brand { color: #fff !important; }
+.nav-pill {
+  background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12);
+  color: #cbd5e1; padding: 6px 13px; border-radius: 999px;
+  font-size: .78rem; font-weight: 800; white-space: nowrap;
+}
+.nav-pill i { color: #a78bfa; margin-right: 5px; }
 </style>
 </head>
 <body>
@@ -912,7 +976,7 @@ h6{
 
             <div class="col-12 col-md-6">
                 <label class="upload-box">
-                    <input type="file" class="form-control d-none" id="receiptFile" accept="image/*" />
+                    <input type="file" class="form-control d-none" id="receiptFile" accept="image/*" capture="environment" />
 
                     <div class="upload-icon">
                         <i class="bi bi-receipt-cutoff"></i>
@@ -1483,4 +1547,391 @@ h6{
     </div>
 
 </div>
+
+</div><!-- /container -->
+
+<script>window.INITIAL_SESSION_ID = "{{ session_id }}";</script>
+<script
+  src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+  integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+  crossorigin="anonymous"></script>
+<script>
+  const state = {
+    sessionId: null, receipt: null,
+    qrImagePath: "", silverPath: "",
+    friends: [], activeFriend: null, assignments: {}, summary: null,
+  };
+  const $ = (id) => document.getElementById(id);
+  const money = (n) => Number(n || 0).toFixed(2);
+
+  const STEP_ORDER = ["step-upload", "step-items", "step-assign", "step-summary"];
+  const PILL = {
+    "step-upload": "pill-upload", "step-items": "pill-items",
+    "step-assign": "pill-assign", "step-summary": "pill-summary",
+  };
+
+  function showStep(id) {
+    document.querySelectorAll(".step-card").forEach((c) => c.classList.remove("active"));
+    $(id).classList.add("active");
+    const idx = STEP_ORDER.indexOf(id);
+    STEP_ORDER.forEach((sid, i) => {
+      const pill = $(PILL[sid]);
+      if (!pill) return;
+      pill.classList.remove("active", "done");
+      if (i < idx) pill.classList.add("done");
+      else if (i === idx) pill.classList.add("active");
+    });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function alertMsg(msg, kind = "danger") {
+    $("alertBox").innerHTML =
+      `<div class="alert alert-${kind} alert-dismissible fade show" role="alert">` +
+      `${msg}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>`;
+  }
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, (c) =>
+      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  }
+  const initials = (n) => (n || "?").trim().slice(0, 2).toUpperCase() || "?";
+  function confBadge(c) {
+    const pct = Math.round((c || 0) * 100);
+    return c >= 0.7
+      ? `<span class="badge bg-success confidence-badge">🟢 ${pct}%</span>`
+      : `<span class="badge bg-warning text-dark confidence-badge">🟡 ${pct}%</span>`;
+  }
+
+  async function api(path, options = {}) {
+    const res = await fetch(`/api/${path}`, options);
+    const text = await res.text();
+    let data = null;
+    try { data = text ? JSON.parse(text) : null; } catch { data = text; }
+    if (!res.ok) {
+      const detail = (data && data.detail) || (data && data.error) || `Request failed (${res.status})`;
+      throw new Error(detail);
+    }
+    return data;
+  }
+
+  // ---- STEP 1: upload ----
+  function markChosen(input, chosen) {
+    const label = input.closest(".upload-box");
+    const mini = label ? label.querySelector(".upload-mini") : null;
+    if (mini && chosen) mini.textContent = `✓ ${input.files[0].name}`;
+  }
+  function checkUploadReady() {
+    $("btnUpload").disabled = !($("receiptFile").files[0] && $("qrFile").files[0]);
+  }
+  $("receiptFile").addEventListener("change", (e) => { markChosen(e.target, true); checkUploadReady(); });
+  $("qrFile").addEventListener("change", (e) => { markChosen(e.target, true); checkUploadReady(); });
+
+  $("btnUpload").addEventListener("click", async () => {
+    const receiptF = $("receiptFile").files[0];
+    const qrF = $("qrFile").files[0];
+    if (!receiptF || !qrF) { alertMsg("Please choose both a receipt and a QR image."); return; }
+    const spin = $("upSpin");
+    spin.classList.remove("d-none");
+    $("btnUpload").disabled = true;
+    try {
+      const form = new FormData();
+      form.append("receipt", receiptF);
+      form.append("qr", qrF);
+      const res = await api("upload", { method: "POST", body: form });
+      if (!res.receipt.is_valid_receipt) {
+        alertMsg(`That doesn't look like a receipt: ${escapeHtml(res.receipt.validation_reason || "please try another photo.")}`, "warning");
+        return;
+      }
+      if (!res.receipt.items || res.receipt.items.length === 0) {
+        alertMsg("No items were extracted. The AI parse likely failed — check your Gemini API key/quota, then re-upload.", "warning");
+        return;
+      }
+      state.sessionId = res.session_id;
+      state.receipt = res.receipt;
+      state.qrImagePath = res.qr_image_path;
+      state.silverPath = res.silver_path;
+      const secs = (res.processing_ms / 1000).toFixed(1);
+      $("timingBox").innerHTML = `⚡ Extracted in ${secs}s` +
+        (res.receipt.cached ? " (from cache)" : "") +
+        (res.timeout_warning ? ` — <span class="text-danger">slow, Gemini took over 15s</span>` : "");
+      renderEditableItems(res.receipt);
+      showStep("step-items");
+    } catch (e) {
+      alertMsg(`Upload failed: ${e.message}`);
+    } finally {
+      spin.classList.add("d-none");
+      $("btnUpload").disabled = false;
+    }
+  });
+
+  // ---- STEP 2: editable items ----
+  function renderEditableItems(receipt) {
+    const body = $("itemsBody");
+    body.innerHTML = "";
+    (receipt.items || []).forEach((it) => {
+      const low = it.confidence < 0.7;
+      const tr = document.createElement("tr");
+      tr.className = "item-row" + (low ? " low-conf" : "");
+      tr.dataset.conf = it.confidence;
+      tr.dataset.id = it.id;
+      tr.innerHTML =
+        `<td><input class="form-control i-name" value="${escapeHtml(it.name)}" /></td>` +
+        `<td><input type="number" min="1" class="form-control i-qty text-center" value="${it.quantity}" /></td>` +
+        `<td><input type="number" step="0.01" class="form-control i-price text-end" value="${Number(it.price).toFixed(2)}" /></td>` +
+        `<td class="text-center">${confBadge(it.confidence)}</td>`;
+      body.appendChild(tr);
+    });
+    $("taxInput").value = String(Number(receipt.tax_percent || 0));
+    body.querySelectorAll("input").forEach((i) => i.addEventListener("input", recalcTotals));
+    $("taxInput").addEventListener("input", recalcTotals);
+    recalcTotals();
+    const firstLow = body.querySelector(".low-conf .i-price");
+    if (firstLow) { firstLow.focus(); firstLow.select(); }
+  }
+
+  function recalcTotals() {
+    let subtotal = 0;
+    document.querySelectorAll("#itemsBody tr").forEach((r) => {
+      subtotal += parseFloat(r.querySelector(".i-price").value) || 0;
+    });
+    const pct = parseFloat($("taxInput").value) || 0;
+    $("sumSubtotal").textContent = `RM${money(subtotal)}`;
+    $("sumTotal").textContent = money(subtotal + subtotal * pct / 100);
+  }
+
+  function collectReceipt() {
+    const items = [...document.querySelectorAll("#itemsBody tr")].map((r) => ({
+      id: r.dataset.id,
+      name: r.querySelector(".i-name").value.trim() || "Item",
+      quantity: parseInt(r.querySelector(".i-qty").value) || 1,
+      price: parseFloat(r.querySelector(".i-price").value) || 0,
+      confidence: parseFloat(r.dataset.conf) || 0,
+    }));
+    const pct = parseFloat($("taxInput").value) || 0;
+    const subtotal = items.reduce((s, i) => s + i.price, 0);
+    const tax = subtotal * pct / 100;
+    return { ...state.receipt, items, tax_percent: pct, tax_amount: Number(tax.toFixed(2)), subtotal, total: subtotal + tax };
+  }
+
+  $("btnConfirm").addEventListener("click", async () => {
+    try {
+      state.receipt = collectReceipt();
+      await api("sessions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: state.sessionId,
+          name: $("sessionName").value || "Untitled",
+          created_by: $("paidBy").value || "Me",
+          receipt: state.receipt,
+          qr_image_path: state.qrImagePath,
+          silver_path: state.silverPath,
+        }),
+      });
+      renderFriendChips();
+      renderAssignTable();
+      showStep("step-assign");
+    } catch (e) {
+      alertMsg(`Could not save session: ${e.message}`);
+    }
+  });
+
+  // ---- STEP 3: friends + assignment ----
+  $("btnAddFriend").addEventListener("click", async () => {
+    const name = $("friendName").value.trim();
+    if (!name) { alertMsg("Enter a friend's name."); return; }
+    try {
+      const friend = await api(`sessions/${state.sessionId}/friends`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name }),
+      });
+      state.friends.push(friend);
+      state.activeFriend = friend.id;
+      $("friendName").value = "";
+      renderFriendChips();
+      renderAssignTable();
+    } catch (e) {
+      alertMsg(`Could not add friend: ${e.message}`);
+    }
+  });
+  $("friendName").addEventListener("keydown", (e) => {
+    if (e.key === "Enter") { e.preventDefault(); $("btnAddFriend").click(); }
+  });
+
+  const friendById = (id) => state.friends.find((f) => f.id === id);
+
+  function assignableUnits() {
+    const units = [];
+    (state.receipt.items || []).forEach((it) => {
+      const q = it.quantity && it.quantity > 0 ? it.quantity : 1;
+      const unitPrice = it.price / q;
+      for (let n = 0; n < q; n++) {
+        const label = q > 1 ? `${it.name} (${n + 1} of ${q})` : it.name;
+        units.push({ unitId: `${it.id}#${n}`, label, price: unitPrice });
+      }
+    });
+    return units;
+  }
+
+  function clientShares() {
+    const priceOf = {}; assignableUnits().forEach((u) => (priceOf[u.unitId] = u.price));
+    const acc = {}; state.friends.forEach((f) => (acc[f.id] = { subtotal: 0 }));
+    for (const [unitId, set] of Object.entries(state.assignments)) {
+      const ids = [...set].filter((id) => acc[id]);
+      if (!ids.length || priceOf[unitId] == null) continue;
+      const share = priceOf[unitId] / ids.length;
+      ids.forEach((id) => (acc[id].subtotal += share));
+    }
+    const pct = Number(state.receipt.tax_percent) || 0;
+    const out = {};
+    state.friends.forEach((f) => { const s = acc[f.id].subtotal; out[f.id] = s + s * pct / 100; });
+    return out;
+  }
+
+  function renderFriendChips() {
+    const box = $("friendChips");
+    const totals = clientShares();
+    box.innerHTML = "";
+    if (!state.friends.length) {
+      box.innerHTML = `<span class="text-muted small">No friends yet — add some above.</span>`;
+      return;
+    }
+    state.friends.forEach((f) => {
+      const active = f.id === state.activeFriend;
+      box.insertAdjacentHTML("beforeend",
+        `<button class="btn friend-chip ${active ? "btn-primary" : "btn-light"}" data-fid="${f.id}">` +
+        `<span class="avatar me-2" style="background:${f.avatar_color}">${initials(f.name)}</span>` +
+        `${escapeHtml(f.name)} · RM${money(totals[f.id])}</button>`);
+    });
+    box.querySelectorAll("[data-fid]").forEach((btn) =>
+      btn.addEventListener("click", () => { state.activeFriend = btn.dataset.fid; renderFriendChips(); }));
+  }
+
+  function renderAssignTable() {
+    const body = $("assignBody");
+    body.innerHTML = "";
+    assignableUnits().forEach((u) => {
+      const sharers = state.assignments[u.unitId] || new Set();
+      const chips = [...sharers].map((fid) => {
+        const f = friendById(fid);
+        return f ? `<span class="avatar me-1" title="${escapeHtml(f.name)}" style="background:${f.avatar_color}">${initials(f.name)}</span>` : "";
+      }).join("");
+      const row = document.createElement("tr");
+      row.className = "item-row assignable";
+      row.innerHTML = `<td>${escapeHtml(u.label)}</td><td class="text-end">RM${money(u.price)}</td>` +
+        `<td>${chips || '<span class="text-muted small">— tap to assign active friend —</span>'}</td>`;
+      row.addEventListener("click", () => toggleAssign(u.unitId));
+      body.appendChild(row);
+    });
+  }
+
+  function toggleAssign(unitId) {
+    if (!state.activeFriend) { alertMsg("Add and select a friend first.", "warning"); return; }
+    const set = state.assignments[unitId] || new Set();
+    set.has(state.activeFriend) ? set.delete(state.activeFriend) : set.add(state.activeFriend);
+    state.assignments[unitId] = set;
+    renderAssignTable();
+    renderFriendChips();
+  }
+
+  $("btnSummary").addEventListener("click", async () => {
+    try {
+      const payload = {};
+      for (const [item, set] of Object.entries(state.assignments)) if (set.size) payload[item] = [...set];
+      await api(`sessions/${state.sessionId}/assign`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ assignments: payload }),
+      });
+      const summary = await api(`sessions/${state.sessionId}/summary`);
+      state.summary = summary;
+      renderSummary(summary);
+      showStep("step-summary");
+    } catch (e) {
+      alertMsg(`Could not compute summary: ${e.message}`);
+    }
+  });
+
+  // ---- STEP 4: summary + paid tracking ----
+  function renderSummary(summary) {
+    $("summaryPaidBy").textContent = summary.paid_by || "—";
+    const box = $("summaryFriends");
+    box.innerHTML = "";
+    (summary.friends || []).forEach((f) => {
+      const itemsHtml = f.items.map((i) => `<div>${escapeHtml(i.name)}: RM${money(i.price)}</div>`).join("");
+      box.insertAdjacentHTML("beforeend",
+        `<div class="friend-card mb-3" style="border-left-color:${f.avatar_color};background:rgba(255,255,255,.06)">
+           <div class="card-body">
+             <div class="d-flex justify-content-between align-items-center mb-2">
+               <span class="fw-bold"><span class="dot me-2" style="background:${f.avatar_color}"></span>${escapeHtml(f.name)}</span>
+               <div class="form-check">
+                 <input class="form-check-input paid-check" type="checkbox" data-fid="${f.friend_id}" id="paid_${f.friend_id}" ${f.is_paid ? "checked disabled" : ""}>
+                 <label class="form-check-label" for="paid_${f.friend_id}">Mark as Paid</label>
+               </div>
+             </div>
+             <div class="text-muted small mb-1">${itemsHtml}</div>
+             <div>Tax share: RM${money(f.tax_share)}</div>
+             <div class="fw-bold">Total: RM${money(f.total_owed)}</div>
+           </div>
+         </div>`);
+    });
+    $("summaryQr").src = `/api/sessions/${summary.session_id}/qr`;
+    $("qrSection").classList.remove("d-none");
+    box.querySelectorAll(".paid-check").forEach((c) =>
+      c.addEventListener("change", () => markPaid(c.dataset.fid)));
+    updateTotals();
+  }
+
+  function updateTotals() {
+    const s = state.summary;
+    const paid = s.friends.filter((f) => f.is_paid).reduce((a, f) => a + f.total_owed, 0);
+    $("totTotal").textContent = money(s.total);
+    $("totPaid").textContent = money(paid);
+    $("totRemaining").textContent = money(s.total - paid);
+    const allPaid = s.friends.length > 0 && s.friends.every((f) => f.is_paid);
+    $("btnComplete").classList.toggle("d-none", !allPaid);
+  }
+
+  async function markPaid(fid) {
+    try {
+      await api(`sessions/${state.sessionId}/friends/${fid}/paid`, { method: "PATCH" });
+      const f = state.summary.friends.find((x) => x.friend_id === fid);
+      if (f) f.is_paid = true;
+      const cb = $(`paid_${fid}`);
+      if (cb) cb.disabled = true;
+      updateTotals();
+    } catch (e) {
+      alertMsg(`Could not mark paid: ${e.message}`);
+    }
+  }
+
+  $("btnComplete").addEventListener("click", () => {
+    $("btnComplete").classList.add("d-none");
+    const msg = $("completeMsg");
+    msg.textContent = "All paid! Session complete 🎉  Returning home…";
+    msg.classList.remove("d-none");
+    setTimeout(() => { window.location.href = "/"; }, 3000);
+  });
+
+  // ---- Resume an existing session (from home / shared link) ----
+  async function loadExistingSession(id) {
+    try {
+      const session = await api(`sessions/${id}`);
+      state.sessionId = id;
+      state.receipt = session.receipt;
+      state.friends = session.friends || [];
+      const summary = await api(`sessions/${id}/summary`);
+      state.summary = summary;
+      renderSummary(summary);
+      showStep("step-summary");
+    } catch (e) {
+      alertMsg(`Could not open that session: ${e.message}`);
+      showStep("step-upload");
+    }
+  }
+  if (window.INITIAL_SESSION_ID) loadExistingSession(window.INITIAL_SESSION_ID);
+</script>
+
+</body>
+</html>
 

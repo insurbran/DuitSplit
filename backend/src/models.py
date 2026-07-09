@@ -95,3 +95,17 @@ class BillSummary(BaseModel):
     total: float = 0.0
     paid: float = 0.0
     remaining: float = 0.0
+
+
+class SessionSummary(BaseModel):
+    """A compact overview of one active session, for the home-page list."""
+
+    id: str
+    name: str
+    created_by: str
+    total_amount: float = 0.0
+    paid_amount: float = 0.0
+    remaining_amount: float = 0.0
+    friends_total: int = 0
+    friends_paid: int = 0
+    created_at: str = ""

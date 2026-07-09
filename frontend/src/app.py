@@ -34,7 +34,14 @@ _HOP_BY_HOP = {
 
 
 @app.get("/", response_class=HTMLResponse)
-def index(request: Request) -> HTMLResponse:
+def home(request: Request) -> HTMLResponse:
+    """Home page: list of active (unpaid) sessions to resume, plus New Session."""
+    return templates.TemplateResponse("home.html", {"request": request})
+
+
+@app.get("/new", response_class=HTMLResponse)
+def new_session(request: Request) -> HTMLResponse:
+    """Start a fresh split (the upload → review → assign → summary flow)."""
     return templates.TemplateResponse(
         "index.html",
         {"request": request, "backend_url": BACKEND_URL, "session_id": ""},
@@ -42,8 +49,8 @@ def index(request: Request) -> HTMLResponse:
 
 
 @app.get("/session/{session_id}", response_class=HTMLResponse)
-def session_view(request: Request, session_id: str) -> HTMLResponse:
-    """Shareable session URL: open the same split on any device."""
+def session_page(request: Request, session_id: str) -> HTMLResponse:
+    """Resume an existing session: opens directly on the bill summary."""
     return templates.TemplateResponse(
         "index.html",
         {"request": request, "backend_url": BACKEND_URL, "session_id": session_id},

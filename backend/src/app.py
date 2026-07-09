@@ -21,7 +21,7 @@ from slowapi.util import get_remote_address
 
 import ocr
 from calculator import calculate_bill, compute_shares
-from models import BillSummary, Friend, Receipt, Session
+from models import BillSummary, Friend, Receipt, Session, SessionSummary
 from parser import parse_receipt, validate_receipt
 
 load_dotenv()
@@ -269,6 +269,43 @@ async def upload(request: Request, receipt: UploadFile, qr: UploadFile) -> Uploa
     except Exception as exc:  # noqa: BLE001
         logger.error("upload error: %s", exc)
         raise HTTPException(status_code=500, detail="Failed to process upload.")
+
+
+@app.get("/sessions")
+def list_sessions() -> list[SessionSummary]:
+    """List active (not-fully-paid) sessions for the home page."""
+    try:
+        with get_db() as conn:
+            rows = conn.execute(
+                "SELECT id, created_at FROM sessions ORDER BY created_at DESC"
+            ).fetchall()
+
+        summaries: list[SessionSummary] = []
+        for row in rows:
+            session = _load_session(row["id"])
+            bill = calculate_bill(session)
+            friends_total = len(session.friends)
+            friends_paid = sum(1 for f in session.friends if f.is_paid)
+            # Skip fully-paid sessions (they are normally deleted already).
+            if friends_total > 0 and friends_paid == friends_total:
+                continue
+            summaries.append(
+                SessionSummary(
+                    id=session.id,
+                    name=session.name,
+                    created_by=session.created_by,
+                    total_amount=bill.total,
+                    paid_amount=bill.paid,
+                    remaining_amount=bill.remaining,
+                    friends_total=friends_total,
+                    friends_paid=friends_paid,
+                    created_at=row["created_at"] or "",
+                )
+            )
+        return summaries
+    except Exception as exc:  # noqa: BLE001
+        logger.error("list_sessions error: %s", exc)
+        raise HTTPException(status_code=500, detail="Failed to list sessions.")
 
 
 @app.post("/sessions")
